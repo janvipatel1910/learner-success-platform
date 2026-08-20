@@ -1,0 +1,58 @@
+name: PostgreSQL Schema Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/database/**"
+      - "scripts/validate_schema.sh"
+      - "compose.yaml"
+      - ".github/workflows/schema-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/database/**"
+      - "scripts/validate_schema.sh"
+      - "compose.yaml"
+      - ".github/workflows/schema-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schema-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-schema:
+    name: Validate PostgreSQL schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate shell syntax
+        run: bash -n scripts/validate_schema.sh
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+
+      - name: Execute PostgreSQL schema validation
+        run: ./scripts/validate_schema.sh
+
+      - name: Write validation summary
+        if: success()
+        run: |
+          {
+            echo "## SkillPulse schema validation"
+            echo ""
+            echo "- PostgreSQL version: 16"
+            echo "- Tables validated: 29"
+            echo "- Analytics views validated: 7"
+            echo "- Result: Passed"
+          } >> "${GITHUB_STEP_SUMMARY}"
