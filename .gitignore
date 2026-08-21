@@ -73,3 +73,5 @@ logs/
 *.tmp
 *.swp
 *~
+# Python package metadata
+*.egg-info/
