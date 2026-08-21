@@ -2,9 +2,11 @@
 
 [![PostgreSQL Schema Validation](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/schema-validation.yml/badge.svg)](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/schema-validation.yml)
 
+[![Backend CI](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/backend-ci.yml)
+
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-002 — validated PostgreSQL data model and automated schema CI
+> **Current status:** SC-003 — containerized FastAPI backend and automated backend CI
 
 > **Project owner and lead developer:** Janvi Patel
 
@@ -115,7 +117,10 @@ flowchart TD
 | SC-002 reusable validation script | Implemented |
 | Docker Compose development database | Implemented |
 | GitHub Actions schema validation | Implemented |
-| FastAPI backend | Planned |
+| SC-003 FastAPI backend foundation | Implemented |
+| PostgreSQL readiness integration | Implemented |
+| Containerized non-root API service | Implemented |
+| Backend quality and test CI | Implemented |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -166,28 +171,114 @@ docker compose down
 ```
 
 The local PostgreSQL service uses port `55432` by default.
+### Start the Complete Application Stack
+
+Build and start PostgreSQL and the FastAPI service:
+
+```bash
+docker compose up -d --build
+```
+
+Check container health:
+
+```bash
+docker compose ps
+```
+
+Verify API and database readiness:
+
+```bash
+curl -fsS http://127.0.0.1:8000/ready
+```
+
+Available local endpoints:
+
+- API information: `http://127.0.0.1:8000/`
+- Liveness: `http://127.0.0.1:8000/health`
+- Readiness: `http://127.0.0.1:8000/ready`
+- OpenAPI documentation: `http://127.0.0.1:8000/docs`
+
+Stop the application stack without deleting the database volume:
+
+```bash
+docker compose down
+```
+
+### Run the FastAPI Source Locally
+
+Create and activate a virtual environment, then install the project:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install ".[dev]"
+```
+
+Start the source application:
+
+```bash
+PYTHONPATH=backend python -m uvicorn skillpulse.main:app \
+  --host 127.0.0.1 \
+  --port 8000
+```
+
+### Run Backend Validation
+
+```bash
+ruff check backend tests
+pytest -m "not integration"
+RUN_DATABASE_TESTS=true PYTHONPATH=backend pytest -m integration
+```
 
 ## Repository Structure
 
 ```text
 learner-success-platform/
-├── .github/workflows/       GitHub Actions pipelines
-├── analytics/
-│   ├── excel/               Excel analysis assets
-│   ├── powerbi/             Power BI dashboard assets
-│   ├── python/              Python analytics pipelines
-│   └── sql/                 Reporting and analysis queries
-├── backend/
-│   └── database/            PostgreSQL schema
-├── data/sample/             Synthetic development data
-├── docs/                    Product and validation evidence
-├── frontend/                React learner portal
-├── infrastructure/
-│   └── terraform/           AWS infrastructure as code
-├── scripts/                 Development and validation automation
-├── tests/                   Automated application tests
-├── compose.yaml             Local PostgreSQL service
-└── README.md
+|-- .github/
+|   `-- workflows/
+|       |-- backend-ci.yml
+|       `-- schema-validation.yml
+|-- analytics/
+|   |-- excel/
+|   |-- powerbi/
+|   |-- python/
+|   `-- sql/
+|-- backend/
+|   |-- database/
+|   |   `-- schema.sql
+|   |-- skillpulse/
+|   |   |-- api/
+|   |   |-- core/
+|   |   |-- db/
+|   |   |-- schemas/
+|   |   `-- main.py
+|   `-- Dockerfile
+|-- data/
+|   `-- sample/
+|-- docs/
+|   |-- PRODUCT_CHARTER.md
+|   |-- DATA_MODEL.md
+|   |-- SC-001_VALIDATION.md
+|   |-- SC-002_SCHEMA_CI.md
+|   `-- SC-003_FASTAPI_FOUNDATION.md
+|-- frontend/
+|-- infrastructure/
+|   `-- terraform/
+|-- scripts/
+|   `-- validate_schema.sh
+|-- tests/
+|   `-- backend/
+|       |-- conftest.py
+|       |-- test_config.py
+|       |-- test_database.py
+|       `-- test_health.py
+|-- .dockerignore
+|-- .env.example
+|-- .gitignore
+|-- compose.yaml
+|-- pyproject.toml
+`-- README.md
 ```
 
 ## Database Foundation
@@ -214,6 +305,8 @@ The validated PostgreSQL design currently includes:
 - [Product data model](docs/DATA_MODEL.md)
 - [SC-001 PostgreSQL validation](docs/SC-001_VALIDATION.md)
 - [SC-002 schema CI implementation](docs/SC-002_SCHEMA_CI.md)
+
+- [SC-003 FastAPI backend foundation](docs/SC-003_FASTAPI_FOUNDATION.md)
 
 ## Relationship to Beginner Cloud Journey
 
