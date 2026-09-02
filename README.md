@@ -121,6 +121,10 @@ flowchart TD
 | PostgreSQL readiness integration | Implemented |
 | Containerized non-root API service | Implemented |
 | Backend quality and test CI | Implemented |
+| SC-004 Alembic database migrations | Implemented |
+| Reversible upgrade and downgrade cycle | Validated |
+| Deterministic synthetic learner data | Implemented |
+| Synthetic analytics-view coverage | Validated |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -155,7 +159,8 @@ The script creates an isolated PostgreSQL 16 container, validates the complete s
 ### Start the Development Database
 
 ```bash
-docker compose up -d
+docker compose up -d database
+docker compose run --rm migration
 ```
 
 Check database health:
@@ -204,6 +209,38 @@ Stop the application stack without deleting the database volume:
 docker compose down
 ```
 
+### Manage Database Migrations
+
+The migration service waits for PostgreSQL to become healthy before applying the latest revision.
+
+Apply all pending migrations:
+
+```bash
+docker compose run --rm migration
+```
+
+Inspect the current revision:
+
+```bash
+docker compose run --rm migration python -m alembic current
+```
+
+Downgrade one revision when validating rollback behavior:
+
+```bash
+docker compose run --rm migration python -m alembic downgrade -1
+```
+
+### Load Synthetic Demonstration Data
+
+After installing the Python project, load the deterministic fictional dataset:
+
+```bash
+python scripts/seed_synthetic_data.py
+```
+
+The seed is idempotent, uses reserved `.example` email addresses, populates all seven analytics views and is blocked when `ENVIRONMENT=production`.
+
 ### Run the FastAPI Source Locally
 
 Create and activate a virtual environment, then install the project:
@@ -226,9 +263,9 @@ PYTHONPATH=backend python -m uvicorn skillpulse.main:app \
 ### Run Backend Validation
 
 ```bash
-ruff check backend tests
+ruff check backend scripts tests
 pytest -m "not integration"
-RUN_DATABASE_TESTS=true PYTHONPATH=backend pytest -m integration
+RUN_DATABASE_TESTS=true RUN_SEED_TESTS=true pytest -m integration
 ```
 
 ## Repository Structure
@@ -247,6 +284,10 @@ learner-success-platform/
 |-- backend/
 |   |-- database/
 |   |   `-- schema.sql
+|   |-- migrations/
+|   |   |-- sql/
+|   |   |-- versions/
+|   |   `-- env.py
 |   |-- skillpulse/
 |   |   |-- api/
 |   |   |-- core/
@@ -256,26 +297,33 @@ learner-success-platform/
 |   `-- Dockerfile
 |-- data/
 |   `-- sample/
+|       `-- skillpulse_seed.sql
 |-- docs/
 |   |-- PRODUCT_CHARTER.md
 |   |-- DATA_MODEL.md
 |   |-- SC-001_VALIDATION.md
 |   |-- SC-002_SCHEMA_CI.md
-|   `-- SC-003_FASTAPI_FOUNDATION.md
+|   |-- SC-003_FASTAPI_FOUNDATION.md
+|   `-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
 |-- frontend/
 |-- infrastructure/
 |   `-- terraform/
 |-- scripts/
+|   |-- __init__.py
+|   |-- seed_synthetic_data.py
 |   `-- validate_schema.sh
 |-- tests/
 |   `-- backend/
 |       |-- conftest.py
 |       |-- test_config.py
 |       |-- test_database.py
-|       `-- test_health.py
+|       |-- test_health.py
+|       |-- test_migrations_and_seed.py
+|       `-- test_seed_data.py
 |-- .dockerignore
 |-- .env.example
 |-- .gitignore
+|-- alembic.ini
 |-- compose.yaml
 |-- pyproject.toml
 `-- README.md
@@ -307,6 +355,8 @@ The validated PostgreSQL design currently includes:
 - [SC-002 schema CI implementation](docs/SC-002_SCHEMA_CI.md)
 
 - [SC-003 FastAPI backend foundation](docs/SC-003_FASTAPI_FOUNDATION.md)
+
+- [SC-004 database migrations and synthetic data](docs/SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md)
 
 ## Relationship to Beginner Cloud Journey
 
