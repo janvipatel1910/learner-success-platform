@@ -22,7 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "httpx>=0.28,<1.0",
+  "httpx2>=2.9,<3.0",
   "pytest>=8.4,<10.0",
   "pytest-asyncio>=1.1,<2.0",
   "ruff>=0.12,<1.0"
@@ -35,7 +35,7 @@ include = ["skillpulse*"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers --strict-config"
 testpaths = ["tests/backend"]
-pythonpath = ["backend"]
+pythonpath = [".", "backend"]
 asyncio_mode = "auto"
 markers = [
   "integration: tests that require PostgreSQL",
