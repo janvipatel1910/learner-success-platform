@@ -6,6 +6,13 @@ on:
       - main
     paths:
       - "backend/skillpulse/**"
+      - "backend/migrations/**"
+      - "backend/database/**"
+      - "backend/Dockerfile"
+      - "data/sample/**"
+      - "scripts/**"
+      - "alembic.ini"
+      - "compose.yaml"
       - "tests/backend/**"
       - "pyproject.toml"
       - ".github/workflows/backend-ci.yml"
@@ -14,6 +21,13 @@ on:
       - main
     paths:
       - "backend/skillpulse/**"
+      - "backend/migrations/**"
+      - "backend/database/**"
+      - "backend/Dockerfile"
+      - "data/sample/**"
+      - "scripts/**"
+      - "alembic.ini"
+      - "compose.yaml"
       - "tests/backend/**"
       - "pyproject.toml"
       - ".github/workflows/backend-ci.yml"
@@ -56,7 +70,7 @@ jobs:
           python -m pip install ".[dev]"
 
       - name: Run Ruff
-        run: ruff check backend tests
+        run: ruff check backend scripts tests
 
       - name: Run unit tests
         run: pytest -m "not integration"
@@ -89,6 +103,7 @@ jobs:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
       RUN_DATABASE_TESTS: "true"
+      RUN_SEED_TESTS: "true"
 
     steps:
       - name: Check out repository
@@ -106,5 +121,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[dev]"
 
-      - name: Run PostgreSQL integration test
+      - name: Validate database migration cycle
+        run: |
+          python -m alembic upgrade head
+          python -m alembic downgrade base
+          python -m alembic upgrade head
+
+      - name: Run PostgreSQL integration tests
         run: pytest -m integration

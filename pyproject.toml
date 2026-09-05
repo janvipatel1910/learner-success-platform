@@ -12,6 +12,7 @@ authors = [
   { name = "Janvi Patel" }
 ]
 dependencies = [
+  "alembic>=1.19,<2.0",
   "fastapi>=0.116,<1.0",
   "pydantic-settings>=2.10,<3.0",
   "psycopg[binary,pool]>=3.3,<4.0",
@@ -34,7 +35,7 @@ include = ["skillpulse*"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers --strict-config"
 testpaths = ["tests/backend"]
-pythonpath = ["backend"]
+pythonpath = [".", "backend"]
 asyncio_mode = "auto"
 markers = [
   "integration: tests that require PostgreSQL",

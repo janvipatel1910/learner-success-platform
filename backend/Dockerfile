@@ -10,6 +10,8 @@ RUN addgroup --system skillpulse \
     && adduser --system --ingroup skillpulse skillpulse
 
 COPY pyproject.toml README.md ./
+COPY alembic.ini ./
+COPY backend/migrations ./backend/migrations
 COPY backend/skillpulse ./backend/skillpulse
 
 RUN python -m pip install --upgrade pip \

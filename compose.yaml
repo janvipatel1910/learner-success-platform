@@ -12,7 +12,6 @@ services:
       - "${POSTGRES_PORT:-55432}:5432"
     volumes:
       - skillpulse_postgres_data:/var/lib/postgresql/data
-      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
     healthcheck:
       test:
         [
@@ -24,6 +23,25 @@ services:
       retries: 12
       start_period: 10s
     restart: unless-stopped
+  migration:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: skillpulse-migration
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      POSTGRES_DB: ${POSTGRES_DB:-skillpulse}
+      POSTGRES_USER: ${POSTGRES_USER:-skillpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skillpulse_local_only}
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      DATABASE_CONNECT_TIMEOUT_SECONDS: ${DATABASE_CONNECT_TIMEOUT_SECONDS:-3}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: "no"
+
   backend:
     build:
       context: .
@@ -39,8 +57,8 @@ services:
       DATABASE_CONNECT_TIMEOUT_SECONDS: ${DATABASE_CONNECT_TIMEOUT_SECONDS:-3}
       CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:5173"]}'
     depends_on:
-      database:
-        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     ports:
       - "${API_PORT:-8000}:8000"
     restart: unless-stopped
