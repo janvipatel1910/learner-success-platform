@@ -48,20 +48,28 @@ docker run \
   >/dev/null
 
 database_ready="false"
+stable_ready_checks=0
 
-for attempt in {1..30}; do
+for attempt in {1..60}; do
   if docker exec "${CONTAINER_NAME}" \
-    pg_isready \
+    psql \
     -U "${DATABASE_USER}" \
     -d "${DATABASE_NAME}" \
-    >/dev/null 2>&1; then
-    database_ready="true"
-    break
+    -Atqc "SELECT 1;" \
+    2>/dev/null |
+    grep -qx "1"; then
+    stable_ready_checks=$((stable_ready_checks + 1))
+
+    if (( stable_ready_checks >= 3 )); then
+      database_ready="true"
+      break
+    fi
+  else
+    stable_ready_checks=0
   fi
 
   sleep 1
 done
-
 if [[ "${database_ready}" != "true" ]]; then
   echo "ERROR: PostgreSQL did not become ready."
   docker logs "${CONTAINER_NAME}"
