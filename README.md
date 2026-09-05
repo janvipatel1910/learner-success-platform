@@ -6,7 +6,7 @@
 
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-003 — containerized FastAPI backend and automated backend CI
+> **Current status:** SC-004 — versioned database migrations and deterministic synthetic learner data
 
 > **Project owner and lead developer:** Janvi Patel
 
