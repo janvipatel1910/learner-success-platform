@@ -49,6 +49,11 @@ services:
     container_name: skillpulse-api
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-local}
+
+      COGNITO_REGION: ${COGNITO_REGION:-}
+      COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID:-}
+      COGNITO_APP_CLIENT_ID: ${COGNITO_APP_CLIENT_ID:-}
+      JWT_CLOCK_SKEW_SECONDS: ${JWT_CLOCK_SKEW_SECONDS:-30}
       POSTGRES_DB: ${POSTGRES_DB:-skillpulse}
       POSTGRES_USER: ${POSTGRES_USER:-skillpulse}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skillpulse_local_only}

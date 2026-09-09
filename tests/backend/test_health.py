@@ -16,6 +16,7 @@ def test_service_information(client: TestClient) -> None:
         "documentation": "/docs",
         "health": "/health",
         "readiness": "/ready",
+        "authentication": "/api/v1/auth/me",
     }
 
 

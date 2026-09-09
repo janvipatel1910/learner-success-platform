@@ -45,3 +45,51 @@ def test_settings_load_database_values_from_environment(
 def test_invalid_database_port_is_rejected() -> None:
     with pytest.raises(ValidationError):
         Settings(postgres_port=70000)
+def test_cognito_urls_are_derived_from_validated_settings() -> None:
+    settings = Settings(
+        _env_file=None,
+        cognito_region="eu-west-2",
+        cognito_user_pool_id="eu-west-2_example",
+        cognito_app_client_id="example-client-id",
+    )
+
+    assert settings.validated_cognito_configuration() == (
+        "eu-west-2",
+        "eu-west-2_example",
+        "example-client-id",
+    )
+    assert settings.cognito_issuer == (
+        "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_example"
+    )
+    assert settings.cognito_jwks_url == (
+        "https://cognito-idp.eu-west-2.amazonaws.com/"
+        "eu-west-2_example/.well-known/jwks.json"
+    )
+
+
+def test_incomplete_cognito_configuration_fails_closed() -> None:
+    settings = Settings(_env_file=None)
+
+    with pytest.raises(
+        ValueError,
+        match="Cognito authentication settings are incomplete",
+    ):
+        settings.validated_cognito_configuration()
+
+
+def test_invalid_jwt_clock_skew_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, jwt_clock_skew_seconds=301)
+def test_empty_cognito_configuration_is_rejected() -> None:
+    settings = Settings(
+        cognito_region="",
+        cognito_user_pool_id="",
+        cognito_app_client_id="",
+        _env_file=None,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Cognito authentication settings are incomplete.",
+    ):
+        settings.validated_cognito_configuration()

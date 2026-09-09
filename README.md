@@ -6,7 +6,7 @@
 
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-004 — versioned database migrations and deterministic synthetic learner data
+> **Current status:** SC-005 — Cognito-compatible authentication and organisation role authorization
 
 > **Project owner and lead developer:** Janvi Patel
 
@@ -89,7 +89,7 @@ Monitor cohort engagement, attendance, readiness, unresolved blockers, certifica
 | Database | PostgreSQL |
 | Data Analysis | Python, Pandas, SQL |
 | Business Intelligence | Power BI, Excel |
-| Cloud | AWS |
+| Cloud | AWS, Amazon Cognito |
 | DevOps | Git, GitHub Actions, Docker, Terraform |
 | Testing | Pytest and frontend testing |
 | AI | Retrieval from approved course sources with citations |
@@ -125,6 +125,10 @@ flowchart TD
 | Reversible upgrade and downgrade cycle | Validated |
 | Deterministic synthetic learner data | Implemented |
 | Synthetic analytics-view coverage | Validated |
+| SC-005 Cognito-compatible access-token verification | Implemented |
+| Database-backed organisation role authorization | Implemented |
+| Protected current-user API endpoint | Implemented |
+| Authentication and RBAC security tests | Validated |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -207,8 +211,42 @@ Stop the application stack without deleting the database volume:
 
 ```bash
 docker compose down
+### Configure Amazon Cognito Authentication
+
+SkillPulse validates signed Amazon Cognito access tokens. Configure the trusted user pool in `.env`:
+
+```dotenv
+COGNITO_REGION=eu-west-2
+COGNITO_USER_POOL_ID=replace_with_user_pool_id
+COGNITO_APP_CLIENT_ID=replace_with_app_client_id
+JWT_CLOCK_SKEW_SECONDS=30
 ```
 
+These values identify trusted authentication infrastructure; they are not user credentials or application secrets.
+
+The API verifies:
+
+- RS256 token signatures using the Cognito JSON Web Key Set
+- Trusted user-pool issuer
+- Access-token `token_use`
+- Application `client_id`
+- Required subject, issue-time and expiry claims
+- Token expiration with controlled clock skew
+
+A verified Cognito `sub` is mapped to `users.auth_subject`. Active organisation memberships in PostgreSQL remain the authorization source for `student`, `tutor` and `admin` roles. Cognito token groups are not trusted as application roles.
+
+Request the authenticated SkillPulse identity:
+
+```bash
+export COGNITO_ACCESS_TOKEN="replace_with_access_token"
+
+curl -fsS \
+  -H "Authorization: Bearer ${COGNITO_ACCESS_TOKEN}" \
+  http://127.0.0.1:8000/api/v1/auth/me
+```
+
+Missing or invalid credentials return `401`, authenticated subjects without an active SkillPulse identity return `403`, and unavailable authentication or identity infrastructure returns `503`.
+```
 ### Manage Database Migrations
 
 The migration service waits for PostgreSQL to become healthy before applying the latest revision.
@@ -304,7 +342,8 @@ learner-success-platform/
 |   |-- SC-001_VALIDATION.md
 |   |-- SC-002_SCHEMA_CI.md
 |   |-- SC-003_FASTAPI_FOUNDATION.md
-|   `-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
+|   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
+|   `-- SC-005_AUTHENTICATION_AUTHORIZATION.md
 |-- frontend/
 |-- infrastructure/
 |   `-- terraform/
@@ -315,9 +354,12 @@ learner-success-platform/
 |-- tests/
 |   `-- backend/
 |       |-- conftest.py
+|       |-- test_auth.py
+|       |-- test_authorization.py
 |       |-- test_config.py
 |       |-- test_database.py
 |       |-- test_health.py
+|       |-- test_identity.py
 |       |-- test_migrations_and_seed.py
 |       `-- test_seed_data.py
 |-- .dockerignore
@@ -357,6 +399,8 @@ The validated PostgreSQL design currently includes:
 - [SC-003 FastAPI backend foundation](docs/SC-003_FASTAPI_FOUNDATION.md)
 
 - [SC-004 database migrations and synthetic data](docs/SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md)
+
+- [SC-005 authentication and organisation authorization](docs/SC-005_AUTHENTICATION_AUTHORIZATION.md)
 
 ## Relationship to Beginner Cloud Journey
 
