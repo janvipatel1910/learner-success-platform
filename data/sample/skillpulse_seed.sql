@@ -1,6 +1,6 @@
 -- SkillPulse synthetic demonstration dataset.
 -- All people, emails and activity records below are fictional.
--- Safe to rerun: fixed UUIDs and ON CONFLICT DO NOTHING prevent duplicates.
+-- Safe to rerun: fixed UUIDs and conflict handling prevent duplicates.
 
 INSERT INTO organizations (id, name, slug, status)
 VALUES (
@@ -10,11 +10,18 @@ VALUES (
     'pilot'
 )
 ON CONFLICT DO NOTHING;
-
-INSERT INTO users (id, email, full_name, status, last_login_at)
+INSERT INTO users (
+    id,
+    auth_subject,
+    email,
+    full_name,
+    status,
+    last_login_at
+)
 VALUES
     (
         '20000000-0000-0000-0000-000000000001',
+        'a0000000-0000-4000-8000-000000000001',
         'admin@skillpulse.example',
         'Demo Admin',
         'active',
@@ -22,6 +29,7 @@ VALUES
     ),
     (
         '20000000-0000-0000-0000-000000000002',
+        'a0000000-0000-4000-8000-000000000002',
         'tutor@skillpulse.example',
         'Demo Tutor',
         'active',
@@ -29,6 +37,7 @@ VALUES
     ),
     (
         '20000000-0000-0000-0000-000000000003',
+        'a0000000-0000-4000-8000-000000000003',
         'learner.one@skillpulse.example',
         'Demo Learner One',
         'active',
@@ -36,13 +45,15 @@ VALUES
     ),
     (
         '20000000-0000-0000-0000-000000000004',
+        'a0000000-0000-4000-8000-000000000004',
         'learner.two@skillpulse.example',
         'Demo Learner Two',
         'active',
         '2026-08-26T18:10:00Z'
     )
-ON CONFLICT DO NOTHING;
-
+ON CONFLICT (id) DO UPDATE
+SET auth_subject = EXCLUDED.auth_subject
+WHERE users.auth_subject IS NULL;
 INSERT INTO organization_memberships (
     id,
     organization_id,
