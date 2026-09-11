@@ -6,8 +6,7 @@
 
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-005 — Cognito-compatible authentication and organisation role authorization
-
+> **Current status:** SC-006 — organisation-scoped course, topic and cohort management APIs
 > **Project owner and lead developer:** Janvi Patel
 
 > **Potential pilot organisation:** UpSkills, subject to written approval
@@ -129,6 +128,10 @@ flowchart TD
 | Database-backed organisation role authorization | Implemented |
 | Protected current-user API endpoint | Implemented |
 | Authentication and RBAC security tests | Validated |
+| SC-006 organisation-scoped catalog API | Implemented |
+| Course, topic and cohort management | Implemented |
+| Admin-write and member-read authorization | Validated |
+| Catalog API and PostgreSQL integration tests | Validated |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -176,7 +179,8 @@ docker compose ps
 Stop the development database:
 
 ```bash
-docker compose down
+
+### Configure Amazon Cognito Authenticationdocker compose down
 ```
 
 The local PostgreSQL service uses port `55432` by default.
@@ -209,12 +213,15 @@ Available local endpoints:
 
 Stop the application stack without deleting the database volume:
 
-```bash
+```
 docker compose down
+```
+
+
 ### Configure Amazon Cognito Authentication
 
-SkillPulse validates signed Amazon Cognito access tokens. Configure the trusted user pool in `.env`:
 
+SkillPulse validates signed Amazon Cognito access tokens. Configure the trusted user pool in `.env`:
 ```dotenv
 COGNITO_REGION=eu-west-2
 COGNITO_USER_POOL_ID=replace_with_user_pool_id
@@ -246,7 +253,25 @@ curl -fsS \
 ```
 
 Missing or invalid credentials return `401`, authenticated subjects without an active SkillPulse identity return `403`, and unavailable authentication or identity infrastructure returns `503`.
-```
+
+### Use the Course Catalog API
+
+All catalog requests require a verified bearer token and the authorized organisation context in the `X-Organization-ID` header.
+
+| Resource | Endpoint | Supported methods |
+|---|---|---|
+| Courses | `/api/v1/catalog/courses` | `GET`, `POST` |
+| Course | `/api/v1/catalog/courses/{course_id}` | `GET`, `PUT` |
+| Topics | `/api/v1/catalog/courses/{course_id}/topics` | `GET`, `POST` |
+| Topic | `/api/v1/catalog/courses/{course_id}/topics/{topic_id}` | `GET`, `PUT` |
+| Cohorts | `/api/v1/catalog/courses/{course_id}/cohorts` | `GET`, `POST` |
+| Cohort | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}` | `GET`, `PUT` |
+
+Active `student`, `tutor` and `admin` organisation members can read catalog records. Only administrators can create or update them. Cross-organisation access is denied, and lifecycle status changes are used instead of destructive delete endpoints.
+
+
+
+
 ### Manage Database Migrations
 
 The migration service waits for PostgreSQL to become healthy before applying the latest revision.
@@ -342,8 +367,9 @@ learner-success-platform/
 |   |-- SC-001_VALIDATION.md
 |   |-- SC-002_SCHEMA_CI.md
 |   |-- SC-003_FASTAPI_FOUNDATION.md
-|   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
+|   `-- SC-005_AUTHENTICATION_AUTHORIZATION.md|   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
 |   `-- SC-005_AUTHENTICATION_AUTHORIZATION.md
+|    `-- SC-006_COURSE_TOPIC_COHORT_API.md
 |-- frontend/
 |-- infrastructure/
 |   `-- terraform/
@@ -356,6 +382,11 @@ learner-success-platform/
 |       |-- conftest.py
 |       |-- test_auth.py
 |       |-- test_authorization.py
+|       |-- test_catalog_cohorts.py
+|       |-- test_catalog_courses.py
+|       |-- test_catalog_database.py
+|       |-- test_catalog_schemas.py
+|       |-- test_catalog_topics.py
 |       |-- test_config.py
 |       |-- test_database.py
 |       |-- test_health.py
@@ -370,6 +401,7 @@ learner-success-platform/
 |-- pyproject.toml
 `-- README.md
 ```
+
 
 ## Database Foundation
 
@@ -401,6 +433,7 @@ The validated PostgreSQL design currently includes:
 - [SC-004 database migrations and synthetic data](docs/SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md)
 
 - [SC-005 authentication and organisation authorization](docs/SC-005_AUTHENTICATION_AUTHORIZATION.md)
+- [SC-006 course, topic and cohort management API](docs/SC-006_COURSE_TOPIC_COHORT_API.md)
 
 ## Relationship to Beginner Cloud Journey
 
