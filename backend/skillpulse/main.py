@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from skillpulse.api.routes.auth import router as auth_router
 from skillpulse.api.routes.catalog import router as catalog_router
+from skillpulse.api.routes.enrollments import router as enrollment_router
 from skillpulse.api.routes.health import router as health_router
 from skillpulse.core.config import Settings, get_settings
 from skillpulse.db.connection import close_database_connections
@@ -39,11 +40,18 @@ def create_application(settings: Settings | None = None) -> FastAPI:
     )
 
     application.include_router(health_router)
-    application.include_router(auth_router, prefix=application_settings.api_prefix)
     application.include_router(
-    catalog_router,
-    prefix=application_settings.api_prefix,
-)
+        auth_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        catalog_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        enrollment_router,
+        prefix=application_settings.api_prefix,
+    )
     @application.get("/", include_in_schema=False)
     def service_information() -> dict[str, str]:
         return {
