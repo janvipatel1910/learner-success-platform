@@ -2,11 +2,12 @@
 
 [![PostgreSQL Schema Validation](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/schema-validation.yml/badge.svg)](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/schema-validation.yml)
 
+
 [![Backend CI](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/janvipatel1910/learner-success-platform/actions/workflows/backend-ci.yml)
 
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-006 — organisation-scoped course, topic and cohort management APIs
+> **Current status:** SC-007 — organisation-scoped cohort enrollment and roster APIs
 > **Project owner and lead developer:** Janvi Patel
 
 > **Potential pilot organisation:** UpSkills, subject to written approval
@@ -132,6 +133,10 @@ flowchart TD
 | Course, topic and cohort management | Implemented |
 | Admin-write and member-read authorization | Validated |
 | Catalog API and PostgreSQL integration tests | Validated |
+| SC-007 organisation-scoped cohort enrollment API | Implemented |
+| Personal cohort membership and roster operations | Implemented |
+| Assigned-tutor and administrator authorization | Validated |
+| Enrollment API and PostgreSQL integration tests | Validated |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -268,6 +273,17 @@ All catalog requests require a verified bearer token and the authorized organisa
 | Cohort | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}` | `GET`, `PUT` |
 
 Active `student`, `tutor` and `admin` organisation members can read catalog records. Only administrators can create or update them. Cross-organisation access is denied, and lifecycle status changes are used instead of destructive delete endpoints.
+### Use the Cohort Enrollment API
+
+Enrollment requests require a verified bearer token and the authorised organisation context in the `X-Organization-ID` header.
+
+| Resource | Endpoint | Supported methods |
+|---|---|---|
+| My memberships | `/api/v1/catalog/my-cohort-memberships` | `GET` |
+| Cohort roster | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}/members` | `GET`, `POST` |
+| Roster member | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}/members/{membership_id}` | `GET`, `PUT` |
+
+Students, tutors and administrators can list their own memberships. Administrators can read and manage rosters. Tutors can read a roster only when they hold an active tutor assignment in that cohort. Students cannot read rosters, and only administrators can create or update memberships.
 
 
 
@@ -367,9 +383,10 @@ learner-success-platform/
 |   |-- SC-001_VALIDATION.md
 |   |-- SC-002_SCHEMA_CI.md
 |   |-- SC-003_FASTAPI_FOUNDATION.md
-|   `-- SC-005_AUTHENTICATION_AUTHORIZATION.md|   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
-|   `-- SC-005_AUTHENTICATION_AUTHORIZATION.md
-|    `-- SC-006_COURSE_TOPIC_COHORT_API.md
+|   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
+|   |-- SC-005_AUTHENTICATION_AUTHORIZATION.md
+|   |-- SC-006_COURSE_TOPIC_COHORT_API.md
+|   `-- SC-007_COHORT_ENROLLMENT_API.md
 |-- frontend/
 |-- infrastructure/
 |   `-- terraform/
@@ -387,6 +404,9 @@ learner-success-platform/
 |       |-- test_catalog_database.py
 |       |-- test_catalog_schemas.py
 |       |-- test_catalog_topics.py
+|       |-- test_cohort_enrollment_database.py
+|       |-- test_cohort_enrollments.py
+|       |-- test_enrollment_schemas.py
 |       |-- test_config.py
 |       |-- test_database.py
 |       |-- test_health.py
@@ -434,6 +454,8 @@ The validated PostgreSQL design currently includes:
 
 - [SC-005 authentication and organisation authorization](docs/SC-005_AUTHENTICATION_AUTHORIZATION.md)
 - [SC-006 course, topic and cohort management API](docs/SC-006_COURSE_TOPIC_COHORT_API.md)
+- [SC-007 cohort enrollment and roster API](docs/SC-007_COHORT_ENROLLMENT_API.md)
+
 
 ## Relationship to Beginner Cloud Journey
 
