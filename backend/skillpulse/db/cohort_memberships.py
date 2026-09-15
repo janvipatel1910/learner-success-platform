@@ -10,6 +10,7 @@ from skillpulse.schemas.enrollment import (
     CohortMembershipCreate,
     CohortMembershipResponse,
     CohortMembershipUpdate,
+    CohortRole,
     MyCohortMembershipResponse,
 )
 
@@ -202,6 +203,28 @@ _IS_ACTIVE_COHORT_TUTOR = text(
     """
 )
 
+_HAS_ACTIVE_COHORT_ROLE = text(
+    """
+    SELECT EXISTS (
+        SELECT 1
+        FROM cohort_memberships AS cm
+        JOIN cohorts AS h
+            ON h.id = cm.cohort_id
+        JOIN courses AS c
+            ON c.id = h.course_id
+        WHERE
+            cm.user_id = :user_id
+            AND cm.cohort_role::TEXT = CAST(
+                :cohort_role AS TEXT
+            )
+            AND cm.status = 'active'
+            AND h.id = :cohort_id
+            AND h.course_id = :course_id
+            AND c.organization_id = :organization_id
+    )
+    """
+)
+
 _COUNT_MY_COHORT_MEMBERSHIPS = text(
     """
     SELECT COUNT(*)
@@ -316,6 +339,29 @@ def list_cohort_memberships(
         ]
 
     return memberships, total
+
+def has_active_cohort_role(
+    organization_id: UUID,
+    course_id: UUID,
+    cohort_id: UUID,
+    user_id: UUID,
+    cohort_role: CohortRole,
+) -> bool:
+    """Return whether a user holds an active scoped cohort role."""
+
+    with get_engine().connect() as connection:
+        result = connection.execute(
+            _HAS_ACTIVE_COHORT_ROLE,
+            {
+                "organization_id": organization_id,
+                "course_id": course_id,
+                "cohort_id": cohort_id,
+                "user_id": user_id,
+                "cohort_role": cohort_role.value,
+            },
+        ).scalar_one()
+
+    return bool(result)
 
 
 def get_cohort_membership(

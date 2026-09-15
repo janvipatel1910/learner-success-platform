@@ -7,7 +7,7 @@
 
 A data-driven learner-success platform for AWS and DevOps training cohorts.
 
-> **Current status:** SC-007 — organisation-scoped cohort enrollment and roster APIs
+> **Current status:** SC-008 — organisation-scoped class-session management API
 > **Project owner and lead developer:** Janvi Patel
 
 > **Potential pilot organisation:** UpSkills, subject to written approval
@@ -137,6 +137,10 @@ flowchart TD
 | Personal cohort membership and roster operations | Implemented |
 | Assigned-tutor and administrator authorization | Validated |
 | Enrollment API and PostgreSQL integration tests | Validated |
+| SC-008 organisation-scoped class-session API | Implemented |
+| Cohort session read, create and update operations | Implemented |
+| Learner, assigned-tutor and administrator authorization | Validated |
+| Class-session API and PostgreSQL integration tests | Validated |
 | React learner portal | Planned |
 | Python analytics pipeline | Planned |
 | Power BI dashboard | Planned |
@@ -288,6 +292,18 @@ Students, tutors and administrators can list their own memberships. Administrato
 
 
 
+### Use the Class Session API
+
+Class-session requests require a verified bearer token and the authorised organisation context in the `X-Organization-ID` header.
+
+| Resource | Endpoint | Supported methods |
+|---|---|---|
+| Cohort sessions | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}/sessions` | `GET`, `POST` |
+| Class session | `/api/v1/catalog/courses/{course_id}/cohorts/{cohort_id}/sessions/{session_id}` | `GET`, `PUT` |
+
+Active learners can read sessions only in cohorts where they hold an active learner membership. Assigned active tutors can read, create and update sessions in their cohorts. Administrators can read and manage sessions across their organisation. Topics must belong to the cohort's course, timestamps must include a timezone, and cancellation uses the `cancelled` lifecycle status instead of deletion.
+
+
 ### Manage Database Migrations
 
 The migration service waits for PostgreSQL to become healthy before applying the latest revision.
@@ -386,7 +402,8 @@ learner-success-platform/
 |   |-- SC-004_DATABASE_MIGRATIONS_AND_SEED_DATA.md
 |   |-- SC-005_AUTHENTICATION_AUTHORIZATION.md
 |   |-- SC-006_COURSE_TOPIC_COHORT_API.md
-|   `-- SC-007_COHORT_ENROLLMENT_API.md
+|   |-- SC-007_COHORT_ENROLLMENT_API.md
+|   `-- SC-008_CLASS_SESSION_API.md
 |-- frontend/
 |-- infrastructure/
 |   `-- terraform/
@@ -455,6 +472,7 @@ The validated PostgreSQL design currently includes:
 - [SC-005 authentication and organisation authorization](docs/SC-005_AUTHENTICATION_AUTHORIZATION.md)
 - [SC-006 course, topic and cohort management API](docs/SC-006_COURSE_TOPIC_COHORT_API.md)
 - [SC-007 cohort enrollment and roster API](docs/SC-007_COHORT_ENROLLMENT_API.md)
+- [SC-008 class-session management API](docs/SC-008_CLASS_SESSION_API.md)
 
 
 ## Relationship to Beginner Cloud Journey
