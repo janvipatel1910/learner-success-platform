@@ -9,6 +9,9 @@ from skillpulse.api.routes.catalog import router as catalog_router
 from skillpulse.api.routes.class_sessions import router as class_session_router
 from skillpulse.api.routes.enrollments import router as enrollment_router
 from skillpulse.api.routes.health import router as health_router
+from skillpulse.api.routes.session_engagement import (
+    router as session_engagement_router,
+)
 from skillpulse.core.config import Settings, get_settings
 from skillpulse.db.connection import close_database_connections
 
@@ -51,6 +54,10 @@ def create_application(settings: Settings | None = None) -> FastAPI:
     )
     application.include_router(
         class_session_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        session_engagement_router,
         prefix=application_settings.api_prefix,
     )
     application.include_router(
