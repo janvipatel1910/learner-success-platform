@@ -364,3 +364,154 @@ def test_snapshot_is_saved_and_invalid_scope_is_rejected(monkeypatch):
 
         finally:
             transaction.rollback()
+def test_snapshot_history_order_pagination_and_scope(monkeypatch):
+    from contextlib import contextmanager
+    from datetime import timedelta
+    from types import SimpleNamespace
+    from uuid import uuid4
+
+    from sqlalchemy import text
+    from skillpulse.db.connection import get_engine
+
+    temporary_cohort_id = uuid4()
+
+    with get_engine().connect() as connection:
+        transaction = connection.begin()
+
+        try:
+            connection.execute(
+                text("""
+                    INSERT INTO cohorts (
+                        id, course_id, name, start_date,
+                        end_date, delivery_mode, status
+                    )
+                    SELECT
+                        :id, course_id, :name, start_date,
+                        end_date, delivery_mode, status
+                    FROM cohorts
+                    WHERE id = :source_id
+                """),
+                {
+                    "id": temporary_cohort_id,
+                    "name": f"History test {temporary_cohort_id}",
+                    "source_id": COHORT_ID,
+                },
+            )
+            connection.execute(
+                text("""
+                    INSERT INTO cohort_memberships (
+                        cohort_id, user_id, cohort_role,
+                        status, enrolled_at
+                    )
+                    VALUES (
+                        :cohort_id, :learner_id, 'learner',
+                        'active', CURRENT_TIMESTAMP
+                    )
+                """),
+                {
+                    "cohort_id": temporary_cohort_id,
+                    "learner_id": LEARNER_ID,
+                },
+            )
+
+            @contextmanager
+            def use_test_connection():
+                yield connection
+
+            monkeypatch.setattr(
+                repository,
+                "get_engine",
+                lambda: SimpleNamespace(
+                    connect=use_test_connection,
+                    begin=use_test_connection,
+                ),
+            )
+
+            now = connection.execute(
+                text("SELECT CURRENT_TIMESTAMP")
+            ).scalar_one()
+
+            snapshot_ids = []
+
+            for days_ago in (3, 2, 1):
+                snapshot = repository.create_readiness_snapshot(
+                    ORGANIZATION_ID,
+                    COURSE_ID,
+                    temporary_cohort_id,
+                    LEARNER_ID,
+                )
+                assert snapshot is not None
+                snapshot_ids.append(snapshot["id"])
+
+                connection.execute(
+                    text("""
+                        UPDATE readiness_snapshots
+                        SET calculated_at = :calculated_at
+                        WHERE id = :id
+                    """),
+                    {
+                        "id": snapshot["id"],
+                        "calculated_at": now - timedelta(days=days_ago),
+                    },
+                )
+
+            history = repository.list_readiness_snapshots(
+                ORGANIZATION_ID,
+                COURSE_ID,
+                temporary_cohort_id,
+                LEARNER_ID,
+            )
+            assert [row["id"] for row in history] == snapshot_ids[::-1]
+
+            page = repository.list_readiness_snapshots(
+                ORGANIZATION_ID,
+                COURSE_ID,
+                temporary_cohort_id,
+                LEARNER_ID,
+                limit=1,
+                offset=1,
+            )
+            assert [row["id"] for row in page] == [snapshot_ids[1]]
+
+            beyond_end = repository.list_readiness_snapshots(
+                ORGANIZATION_ID,
+                COURSE_ID,
+                temporary_cohort_id,
+                LEARNER_ID,
+                limit=1,
+                offset=3,
+            )
+            assert beyond_end == []
+
+            for org, course, cohort, learner in [
+                (
+                    OTHER_ORGANIZATION_ID,
+                    COURSE_ID,
+                    temporary_cohort_id,
+                    LEARNER_ID,
+                ),
+                (
+                    ORGANIZATION_ID,
+                    UNKNOWN_ID,
+                    temporary_cohort_id,
+                    LEARNER_ID,
+                ),
+                (
+                    ORGANIZATION_ID,
+                    COURSE_ID,
+                    UNKNOWN_ID,
+                    LEARNER_ID,
+                ),
+                (
+                    ORGANIZATION_ID,
+                    COURSE_ID,
+                    temporary_cohort_id,
+                    TUTOR_ID,
+                ),
+            ]:
+                assert repository.list_readiness_snapshots(
+                    org, course, cohort, learner
+                ) == []
+
+        finally:
+            transaction.rollback()

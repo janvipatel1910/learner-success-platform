@@ -333,3 +333,54 @@ def create_readiness_snapshot(
             .mappings()
             .one()
         )
+def list_readiness_snapshots(
+    organization_id: UUID,
+    course_id: UUID,
+    cohort_id: UUID,
+    learner_id: UUID,
+    limit: int = 20,
+    offset: int = 0,
+) -> list[RowMapping]:
+    """Return scoped snapshot history, newest first."""
+    if not 1 <= limit <= 100:
+        raise ValueError("limit must be between 1 and 100")
+    if offset < 0:
+        raise ValueError("offset must not be negative")
+
+    query = text("""
+        SELECT snapshot.*
+        FROM readiness_snapshots AS snapshot
+        JOIN cohorts AS cohort
+            ON cohort.id = snapshot.cohort_id
+        JOIN courses AS course
+            ON course.id = cohort.course_id
+        JOIN readiness_models AS model
+            ON model.id = snapshot.readiness_model_id
+            AND model.organization_id = course.organization_id
+        JOIN cohort_memberships AS membership
+            ON membership.cohort_id = cohort.id
+            AND membership.user_id = snapshot.learner_id
+        WHERE course.organization_id = :organization_id
+            AND course.id = :course_id
+            AND cohort.id = :cohort_id
+            AND snapshot.learner_id = :learner_id
+            AND membership.status::TEXT = 'active'
+            AND membership.cohort_role::TEXT = 'learner'
+        ORDER BY snapshot.calculated_at DESC, snapshot.id DESC
+        LIMIT :limit OFFSET :offset
+    """)
+
+    with get_engine().connect() as connection:
+        return list(
+            connection.execute(
+                query,
+                {
+                    "organization_id": organization_id,
+                    "course_id": course_id,
+                    "cohort_id": cohort_id,
+                    "learner_id": learner_id,
+                    "limit": limit,
+                    "offset": offset,
+                },
+            ).mappings().all()
+        )

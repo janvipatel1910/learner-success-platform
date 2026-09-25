@@ -311,3 +311,147 @@ def test_snapshot_database_error_returns_503(
     assert response.json()["detail"] == (
         "Readiness service is unavailable."
     )
+@pytest.fixture
+def history_reader(monkeypatch):
+    reader = Mock(return_value=[])
+    monkeypatch.setattr(
+        routes.readiness_repository,
+        "list_readiness_snapshots",
+        reader,
+    )
+    return reader
+
+
+@pytest.mark.parametrize(
+    ("role", "own_history", "assigned", "expected_status"),
+    [
+        (MembershipRole.STUDENT, True, True, 200),
+        (MembershipRole.STUDENT, True, False, 403),
+        (MembershipRole.STUDENT, False, True, 403),
+        (MembershipRole.TUTOR, False, True, 200),
+        (MembershipRole.TUTOR, False, False, 403),
+        (MembershipRole.ADMIN, False, False, 200),
+    ],
+)
+def test_history_permissions(
+    client,
+    login,
+    repositories,
+    history_reader,
+    role,
+    own_history,
+    assigned,
+    expected_status,
+):
+    login(role)
+    _, membership = repositories
+    membership.return_value = assigned
+    url = MY_URL if own_history else STAFF_URL
+
+    response = client.get(
+        f"{url}/snapshots",
+        headers=HEADERS,
+        params={"limit": 5, "offset": 2},
+    )
+
+    assert response.status_code == expected_status
+
+    if expected_status == 200:
+        assert response.json() == []
+        history_reader.assert_called_once_with(
+            ORG, COURSE, COHORT, LEARNER, limit=5, offset=2
+        )
+    else:
+        history_reader.assert_not_called()
+
+
+@pytest.mark.parametrize("url", [MY_URL, STAFF_URL])
+def test_history_requires_authentication(client, history_reader, url):
+    response = client.get(
+        f"{url}/snapshots",
+        headers=HEADERS,
+    )
+
+    assert response.status_code == 401
+    history_reader.assert_not_called()
+
+
+def test_history_rejects_other_organization(client, login, history_reader):
+    login(MembershipRole.ADMIN, organization_id=OTHER_ORG)
+
+    response = client.get(
+        f"{STAFF_URL}/snapshots",
+        headers=HEADERS,
+    )
+
+    assert response.status_code == 403
+    history_reader.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"limit": 0},
+        {"limit": 101},
+        {"offset": -1},
+    ],
+)
+def test_history_rejects_invalid_pagination(
+    client, login, history_reader, params
+):
+    login(MembershipRole.ADMIN)
+
+    response = client.get(
+        f"{STAFF_URL}/snapshots",
+        headers=HEADERS,
+        params=params,
+    )
+
+    assert response.status_code == 422
+    history_reader.assert_not_called()
+
+
+def test_history_returns_saved_records(client, login, history_reader):
+    login(MembershipRole.ADMIN)
+    history_reader.return_value = [
+        {
+            "id": MODEL,
+            "learner_id": LEARNER,
+            "overall_score": 85.5,
+            "readiness_level": "ready",
+        }
+    ]
+
+    response = client.get(
+        f"{STAFF_URL}/snapshots",
+        headers=HEADERS,
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": str(MODEL),
+            "learner_id": str(LEARNER),
+            "overall_score": 85.5,
+            "readiness_level": "ready",
+        }
+    ]
+    history_reader.assert_called_once_with(
+        ORG, COURSE, COHORT, LEARNER, limit=20, offset=0
+    )
+
+
+def test_history_database_error_returns_503(
+    client, login, history_reader
+):
+    from sqlalchemy.exc import SQLAlchemyError
+
+    login(MembershipRole.ADMIN)
+    history_reader.side_effect = SQLAlchemyError("Test failure")
+
+    response = client.get(
+        f"{STAFF_URL}/snapshots",
+        headers=HEADERS,
+    )
+
+    assert response.status_code == 503

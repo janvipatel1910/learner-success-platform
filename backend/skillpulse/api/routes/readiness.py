@@ -4,7 +4,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import SQLAlchemyError
 
 from skillpulse.api.dependencies.auth import (
@@ -209,3 +209,77 @@ def create_learner_readiness_snapshot(
         )
 
     return dict(snapshot)
+
+def _read_snapshot_history(
+    access: OrganizationAccess,
+    course_id: UUID,
+    cohort_id: UUID,
+    learner_id: UUID,
+    limit: int,
+    offset: int,
+) -> list[dict[str, object]]:
+    try:
+        snapshots = readiness_repository.list_readiness_snapshots(
+            access.organization_id,
+            course_id,
+            cohort_id,
+            learner_id,
+            limit=limit,
+            offset=offset,
+        )
+    except SQLAlchemyError as exc:
+        raise _service_unavailable(exc) from exc
+
+    return [dict(snapshot) for snapshot in snapshots]
+
+
+@router.get(
+    "/courses/{course_id}/cohorts/{cohort_id}"
+    "/readiness/me/snapshots"
+)
+def get_my_readiness_history(
+    course_id: UUID,
+    cohort_id: UUID,
+    access: StudentAccess,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[dict[str, object]]:
+    _require_cohort_role(
+        access, course_id, cohort_id, CohortRole.LEARNER
+    )
+
+    return _read_snapshot_history(
+        access,
+        course_id,
+        cohort_id,
+        access.user.user_id,
+        limit,
+        offset,
+    )
+
+
+@router.get(
+    "/courses/{course_id}/cohorts/{cohort_id}"
+    "/learners/{learner_id}/readiness/snapshots"
+)
+def get_learner_readiness_history(
+    course_id: UUID,
+    cohort_id: UUID,
+    learner_id: UUID,
+    access: StaffAccess,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> list[dict[str, object]]:
+    if MembershipRole.ADMIN not in access.roles:
+        _require_cohort_role(
+            access, course_id, cohort_id, CohortRole.TUTOR
+        )
+
+    return _read_snapshot_history(
+        access,
+        course_id,
+        cohort_id,
+        learner_id,
+        limit,
+        offset,
+    )
