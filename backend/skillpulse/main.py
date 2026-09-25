@@ -12,6 +12,7 @@ from skillpulse.api.routes.catalog import router as catalog_router
 from skillpulse.api.routes.class_sessions import router as class_session_router
 from skillpulse.api.routes.enrollments import router as enrollment_router
 from skillpulse.api.routes.health import router as health_router
+from skillpulse.api.routes.readiness import router as readiness_router
 from skillpulse.api.routes.session_engagement import (
     router as session_engagement_router,
 )
@@ -46,9 +47,7 @@ def create_application(settings: Settings | None = None) -> FastAPI:
         allow_headers=["*"],
     )
 
-
     application.include_router(health_router)
-
     application.include_router(
         auth_router,
         prefix=application_settings.api_prefix,
@@ -69,9 +68,12 @@ def create_application(settings: Settings | None = None) -> FastAPI:
         blocker_intervention_router,
         prefix=application_settings.api_prefix,
     )
-
     application.include_router(
         enrollment_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        readiness_router,
         prefix=application_settings.api_prefix,
     )
 
