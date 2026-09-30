@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkillPulse | My Learning</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+  <script src="auth.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#overview">SkillPulse</a>
+      <p class="sidebar-caption">LEARNER WORKSPACE</p>
+
+      <nav aria-label="Main navigation">
+        <a href="#overview">Overview</a>
+        <a href="#learning">My Learning</a>
+        <a href="#understanding">My Understanding</a>
+        <a href="#readiness">Exam Readiness</a>
+        <a href="#history">Progress History</a>
+        <a href="#support">Support</a>
+      </nav>
+
+      <div class="sidebar-note">
+        <strong>One step at a time.</strong>
+        <p>Learn, practise, reflect and ask for help.</p>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="workspace-header">
+        <span class="badge">My Learning</span>
+        <span class="account-status">Not signed in</span>
+      </header>
+
+      <section id="overview" class="welcome">
+        <p class="eyebrow">YOUR LEARNING JOURNEY</p>
+        <h1>Build confidence.<br>See your progress.</h1>
+        <p>
+          Follow your learning path, check your understanding
+          and discover what needs attention.
+        </p>
+      </section>
+
+      <p id="connection-status" class="notice" role="status">
+        Not connected. Sign-in setup is pending.
+        Your learning records have not been loaded.
+      </p>
+
+      <section class="summary-grid" aria-label="Progress overview">
+        <article class="card">
+          <h2>Attendance</h2>
+          <p class="metric" id="attendance-summary">—</p>
+          <p>Participation in eligible completed classes.</p>
+        </article>
+        <article class="card">
+          <h2>Lab completion</h2>
+          <p class="metric" id="labs-summary">—</p>
+          <p>Published labs with approved submissions.</p>
+        </article>
+        <article class="card">
+          <h2>Understanding</h2>
+          <p class="metric" id="understanding-summary">—</p>
+          <p>Your feedback after each class.</p>
+        </article>
+        <article class="card">
+          <h2>Open blockers</h2>
+          <p class="metric" id="blockers-summary">—</p>
+          <p>Learning difficulties needing support.</p>
+        </article>
+      </section>
+
+      <div class="dashboard-columns">
+        <div class="main-column">
+          <section id="learning" class="card">
+            <p class="eyebrow">MY LEARNING</p>
+            <h2>Your learning path</h2>
+            <p>
+              Your enrolled courses, topics and learning activities
+              will appear here.
+            </p>
+            <div id="learning-path" class="empty-state">
+              <strong>Your next step starts here</strong>
+              <p>Sign in once account setup is complete to load your courses.</p>
+            </div>
+          </section>
+
+          <section id="understanding" class="card">
+            <p class="eyebrow">REFLECT AFTER EACH CLASS</p>
+            <h2>How well did you understand?</h2>
+            <p>
+              Choose a status for a class and tell your tutor
+              where you need help.
+            </p>
+
+            <div class="understanding-legend">
+              <div class="understanding-option green">
+                <strong>✓ Green · Understood</strong>
+                <p>I can explain this and try it independently.</p>
+              </div>
+              <div class="understanding-option yellow">
+                <strong>? Yellow · Some doubts</strong>
+                <p>I understand parts, but need clarification.</p>
+              </div>
+              <div class="understanding-option red">
+                <strong>! Red · Need help</strong>
+                <p>I need another explanation or guided practice.</p>
+              </div>
+            </div>
+
+            <form id="understanding-form">
+              <fieldset disabled>
+                <legend>Record your understanding</legend>
+
+                <label for="session-select">Class session</label>
+                <select id="session-select" name="session_id">
+                  <option value="">Sign in to load your classes</option>
+                </select>
+
+                <label for="understanding-rating">Your understanding</label>
+                <select id="understanding-rating" name="rating">
+                  <option value="">Choose a status</option>
+                  <option value="green">Green — Understood</option>
+                  <option value="yellow">Yellow — Some doubts</option>
+                  <option value="red">Red — Need help</option>
+                </select>
+
+                <label for="understanding-comment">
+                  What would you like help with?
+                </label>
+                <textarea
+                  id="understanding-comment"
+                  name="comment"
+                  rows="3"
+                  placeholder="For example: I need help understanding IAM roles."
+                ></textarea>
+
+                <button type="submit">Save understanding</button>
+              </fieldset>
+              <p class="form-note">
+                Available after sign-in and class data are connected.
+              </p>
+            </form>
+
+            <p class="form-note">
+              This is your own understanding check.
+              Exam readiness is calculated separately.
+            </p>
+          </section>
+
+          <section id="history" class="card">
+            <h2>Your progress over time</h2>
+            <p>Compare saved readiness snapshots.</p>
+
+            <div class="table-scroll">
+              <table>
+                <caption class="sr-only">Readiness snapshot history</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Readiness level</th>
+                  </tr>
+                </thead>
+                <tbody id="history-body">
+                  <tr>
+                    <td colspan="3">History has not been loaded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="side-column">
+          <section id="readiness" class="card">
+            <p class="eyebrow">EXAM READINESS</p>
+            <h2>Your readiness</h2>
+            <div class="score-display">
+              <span id="overall-score">—</span>
+              <span class="score-total">/ 100</span>
+              <p id="readiness-level">Awaiting data</p>
+            </div>
+            <p id="readiness-summary">
+              Your score and its explanation will appear after connection.
+            </p>
+
+            <dl class="score-breakdown">
+              <div><dt>Quizzes</dt><dd id="quiz-score">—</dd></div>
+              <div><dt>Mock exams</dt><dd id="mock-score">—</dd></div>
+              <div><dt>Practical labs</dt><dd id="lab-score">—</dd></div>
+              <div><dt>Attendance</dt><dd id="attendance-score">—</dd></div>
+              <div><dt>Blocker resolution</dt><dd id="blockers-score">—</dd></div>
+            </dl>
+
+            <h3>Readiness requirements</h3>
+            <ul id="readiness-requirements">
+              <li>Requirements have not been loaded.</li>
+            </ul>
+          </section>
+
+          <section class="card">
+            <h2>Your next steps</h2>
+            <div id="next-steps" class="empty-state">
+              <p>
+                Pending work and unmet readiness requirements
+                will appear when your records are loaded.
+              </p>
+            </div>
+          </section>
+
+          <section id="support" class="card">
+            <p class="eyebrow">YOU CAN ASK FOR HELP</p>
+            <h2>Learning support</h2>
+            <p>
+              Track your blockers and follow up with your tutor.
+            </p>
+            <p class="empty-state">
+              Support records have not been loaded.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <footer>
+        SkillPulse · Readiness is guidance, not a guarantee of exam success.
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
