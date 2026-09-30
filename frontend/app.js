@@ -234,7 +234,7 @@ window.addEventListener("skillpulse:signed-in", async () => {
   setText("connection-status", errors.length
     ? `Signed in. ${errors.join(" ")}`
     : "Connected to demo learner records. Readiness and history loaded. " +
-      "See My Understanding for feedback status. Support is not connected yet.");
+      "See My Understanding and Support for their loading status.");
 });
 
 ;
