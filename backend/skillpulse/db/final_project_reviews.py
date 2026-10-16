@@ -212,15 +212,14 @@ def review_project_submission(
         if review_status == "under_review" and score is not None:
             raise InvalidReview("Record a score with the final review.")
 
-        if score is not None:
-            if (
-                not score.is_finite()
-                or score < 0
-                or score > submission["maximum_score"]
-            ):
-                raise InvalidReview(
-                    "Score must be between zero and the project's maximum."
-                )
+        if score is not None and (
+            not score.is_finite()
+            or score < 0
+            or score > submission["maximum_score"]
+        ):
+          raise InvalidReview(
+                "Score must be between zero and the project's maximum."
+            )
 
         feedback = tutor_feedback.strip()
         if not 10 <= len(feedback) <= 5000:

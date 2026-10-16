@@ -2,7 +2,6 @@ import pytest
 
 from skillpulse.core.readiness import COMPONENTS, calculate_readiness
 
-
 WEIGHTS = {
     "quiz": 0.20,
     "mock": 0.30,

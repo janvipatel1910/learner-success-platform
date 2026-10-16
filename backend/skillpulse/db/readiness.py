@@ -3,12 +3,11 @@
 import json
 from uuid import UUID
 
-from skillpulse.core.readiness import calculate_readiness
 from sqlalchemy import text
 from sqlalchemy.engine import RowMapping
 
+from skillpulse.core.readiness import calculate_readiness
 from skillpulse.db.connection import get_engine
-
 
 _GET_READINESS_INPUTS = text(
     """

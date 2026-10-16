@@ -1,6 +1,9 @@
 import os
+from pathlib import Path
 
 import pytest
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from scripts.seed_synthetic_data import load_synthetic_data
 from sqlalchemy import text
 
@@ -26,7 +29,10 @@ def test_database_revision_is_head() -> None:
             text("SELECT version_num FROM alembic_version")
         ).scalar_one()
 
-    assert revision == "0001"
+    alembic_config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    expected_head = ScriptDirectory.from_config(alembic_config).get_current_head()
+
+    assert revision == expected_head
 
 
 @requires_database

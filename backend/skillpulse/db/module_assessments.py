@@ -12,11 +12,11 @@ from skillpulse.core.module_assessment import (
 )
 from skillpulse.db.connection import get_engine
 from skillpulse.db.module_progress import (
+    _LIST_MODULES,
+    _SCOPE_SQL,
     ModuleAccessDenied,
     ModuleLocked,
     ModuleNotFound,
-    _LIST_MODULES,
-    _SCOPE_SQL,
 )
 
 
