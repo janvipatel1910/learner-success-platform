@@ -11,10 +11,14 @@ from skillpulse.db import final_projects as repository
 from skillpulse.db.connection import get_engine
 from skillpulse.db.module_progress import ModuleAccessDenied
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("RUN_DATABASE_TESTS") != "true",
-    reason="Set RUN_DATABASE_TESTS=true to run database checks.",
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        os.getenv("RUN_DATABASE_TESTS") != "true",
+        reason="Set RUN_DATABASE_TESTS=true to run database checks.",
+    ),
+    pytest.mark.usefixtures("demo_course_content"),
+]
 
 CONTEXT = {
     "organization_id": UUID("10000000-0000-0000-0000-000000000001"),
@@ -95,13 +99,14 @@ def submit(submission_id=None, note=NOTE):
     )
 
 
-def set_review(connection, submission_id, review_status):
+def set_review(connection, submission_id, review_status, score=None):
     connection.execute(
         text("""
             UPDATE lab_submissions
             SET review_status = :review_status,
                 reviewed_by = :tutor,
                 reviewed_at = NOW(),
+                score = :score,
                 tutor_feedback = 'Test review feedback for this project.'
             WHERE id = :submission_id
         """),
@@ -109,6 +114,7 @@ def set_review(connection, submission_id, review_status):
             "review_status": review_status,
             "tutor": TUTOR,
             "submission_id": submission_id,
+            "score": score,
         },
     )
 
@@ -206,9 +212,23 @@ def test_review_feedback_allows_resubmission(database, review_status):
     assert second["reviewed_by"] is None
 
 
-def test_approved_project_blocks_new_submission(database):
+def test_under_threshold_approval_allows_resubmission(database):
+    first = submit()
+    set_review(database, first["submission_id"], "approved", score=36)
+
+    project = repository.get_learner_final_project(**CONTEXT)
+    assert project["can_submit"] is True
+
+    second = submit()
+    assert second["submission_number"] == first["submission_number"] + 1
+
+
+def test_passing_approval_blocks_new_submission(database):
     saved = submit()
-    set_review(database, saved["submission_id"], "approved")
+    set_review(database, saved["submission_id"], "approved", score=85)
+
+    project = repository.get_learner_final_project(**CONTEXT)
+    assert project["can_submit"] is False
 
     with pytest.raises(
         repository.FinalProjectConflict, match="already approved"

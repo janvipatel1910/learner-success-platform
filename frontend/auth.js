@@ -7,7 +7,7 @@
   const redirectUri = "http:" + "//localhost:5173/";
   const apiBase = "http:" + "//localhost:8000/api/v1";
   const storageKey = "skillpulse-login";
-  const status = document.getElementById("connection-status");
+  const status = document.getElementById("login-status");
   const account = document.querySelector(".account-status");
 
   let accessToken = null;
@@ -17,7 +17,24 @@
   button.type = "button";
   button.textContent = "Sign in";
   button.style.marginTop = "0";
-  account.after(button);
+  const loginPage = document.getElementById("login-page");
+  const loginActions = document.getElementById("login-actions");
+  const appShell = document.querySelector(".app-shell");
+
+  function setSignedInView(isSignedIn) {
+    loginPage.hidden = isSignedIn;
+    appShell.hidden = !isSignedIn;
+
+    if (isSignedIn) {
+      account.after(button);
+    } else {
+      button.textContent = "Sign in";
+      loginActions.append(button);
+    }
+  }
+
+  loginActions.append(button);
+  setSignedInView(false);
 
   function encode(bytes) {
     return btoa(String.fromCharCode(...bytes))
@@ -66,6 +83,7 @@
     accessToken = null;
     expiresAt = 0;
     sessionStorage.removeItem(storageKey);
+    setSignedInView(false);
 
     const url = new URL(domain + "/logout");
     url.search = new URLSearchParams({
@@ -98,10 +116,23 @@
         accessToken = null;
         expiresAt = 0;
         account.textContent = "Session expired";
-        button.textContent = "Sign in";
+        setSignedInView(false);
       }
 
-      const error = new Error(`API request failed (${response.status}).`);
+      let message = `API request failed (${response.status}).`;
+      try {
+        const payload = await response.clone().json();
+        if (typeof payload.detail === "string") {
+          message = payload.detail;
+        } else if (Array.isArray(payload.detail)) {
+          message = payload.detail
+            .map((item) => item.msg || JSON.stringify(item))
+            .join("; ");
+        }
+      } catch {
+        // Keep the generic message if the response has no JSON detail.
+      }
+      const error = new Error(message);
       error.status = response.status;
       throw error;
 
@@ -187,9 +218,9 @@
 
     accessToken = tokens.access_token;
     expiresAt = Date.now() + lifetime * 1000;
-    button.textContent = "Sign out";
-
     const user = await request("/auth/me");
+    setSignedInView(true);
+    button.textContent = "Sign out";
     account.textContent = user.full_name;
     status.textContent =
       `Signed in as ${user.full_name}. Learning data connection is next.`;

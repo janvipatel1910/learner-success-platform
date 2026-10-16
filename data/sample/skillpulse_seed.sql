@@ -804,6 +804,8 @@ INSERT INTO certificate_eligibility (
     lab_met,
     mock_score_met,
     blockers_cleared,
+    module_checks_met,
+    final_project_met,
     is_eligible,
     missing_requirements_json,
     evaluated_at
@@ -814,6 +816,8 @@ VALUES
         '20000000-0000-0000-0000-000000000003',
         '42000000-0000-0000-0000-000000000001',
         '81000000-0000-0000-0000-000000000001',
+        TRUE,
+        TRUE,
         TRUE,
         TRUE,
         TRUE,
@@ -834,7 +838,9 @@ VALUES
         FALSE,
         FALSE,
         FALSE,
-        '["attendance", "assignment", "lab", "mock_score", "open_blocker"]',
+        FALSE,
+        FALSE,
+        '["attendance", "assignment", "lab", "mock_score", "open_blocker", "module_checks", "final_project"]',
         '2026-08-25T12:15:00Z'
     )
 ON CONFLICT DO NOTHING;
