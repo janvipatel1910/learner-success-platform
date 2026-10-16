@@ -45,6 +45,8 @@ yarn-error.log*
 *.tfvars
 !*.tfvars.example
 crash.log
+tfplan
+*.tfplan
 .aws-sam/
 
 # Private learner data and uploads
