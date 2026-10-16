@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from skillpulse.db.connection import get_engine
-from skillpulse.db.module_progress import ModuleAccessDenied, _SCOPE_SQL
+from skillpulse.db.module_progress import _SCOPE_SQL, ModuleAccessDenied
 
 
 class FinalProjectNotFound(Exception):
@@ -68,7 +68,8 @@ def _project(connection, parameters):
                 l.title,
                 l.instructions,
                 l.evidence_requirements,
-                l.maximum_score
+                l.maximum_score,
+                p.minimum_passing_percentage
             FROM course_final_projects AS p
             JOIN lab_tasks AS l
               ON l.id = p.lab_task_id
@@ -117,7 +118,7 @@ def _latest_submission(connection, parameters):
     return dict(row) if row is not None else None
 
 
-def _block_reason(counts, latest):
+def _block_reason(counts, latest, project):
     if counts["total"] == 0:
         return "No modules are configured for this course."
 
@@ -128,7 +129,12 @@ def _block_reason(counts, latest):
         if latest["review_status"] in {"submitted", "under_review"}:
             return "Your project is awaiting tutor review."
         if latest["review_status"] == "approved":
-            return "Your final project is already approved."
+            score = latest["score"]
+            if score is not None and (
+                score / project["maximum_score"] * 100
+                >= project["minimum_passing_percentage"]
+            ):
+                return "Your final project is already approved."
 
     return None
 
@@ -150,7 +156,7 @@ def get_learner_final_project(
 
         counts = _module_counts(connection, parameters)
         latest = _latest_submission(connection, parameters)
-        reason = _block_reason(counts, latest)
+        reason = _block_reason(counts, latest, project)
 
         return {
             **project,
@@ -219,7 +225,7 @@ def submit_learner_final_project(
 
         counts = _module_counts(connection, parameters)
         latest = _latest_submission(connection, parameters)
-        reason = _block_reason(counts, latest)
+        reason = _block_reason(counts, latest, project)
 
         if reason is not None:
             raise FinalProjectConflict(reason)

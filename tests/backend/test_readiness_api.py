@@ -7,13 +7,13 @@ import pytest
 
 from skillpulse.api.dependencies.auth import get_current_user
 from skillpulse.api.routes import readiness as routes
+from skillpulse.core.config import get_settings
 from skillpulse.db.identity import (
     AuthenticatedUser,
     MembershipRole,
     OrganizationMembership,
 )
 from skillpulse.schemas.enrollment import CohortRole
-from skillpulse.core.config import get_settings
 
 ORG = UUID("10000000-0000-0000-0000-000000000001")
 OTHER_ORG = UUID("10000000-0000-0000-0000-000000000099")

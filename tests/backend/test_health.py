@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from skillpulse.api.routes import health as health_routes
+from skillpulse.core.config import get_settings
 
 
 def test_service_information(client: TestClient) -> None:
@@ -30,7 +31,7 @@ def test_health_check_returns_service_metadata(
     assert payload["status"] == "healthy"
     assert payload["service"] == "SkillPulse API"
     assert payload["version"] == "0.1.0"
-    assert payload["environment"] == "local"
+    assert payload["environment"] == get_settings().environment
     assert datetime.fromisoformat(payload["timestamp"]).tzinfo is not None
 
 

@@ -246,10 +246,22 @@
     showStatus("Sign in to view your project and submission status.")
   );
 
-  window.addEventListener("skillpulse:signed-in", () => {
+  window.addEventListener("skillpulse:signed-in", (event) => {
+    const isLearner = event.detail?.user?.memberships?.some(
+      (item) =>
+        item.organization_id === pilotContext.organizationId &&
+        item.role === "student"
+    );
+
+    if (!isLearner) {
+      signedIn = false;
+      section.hidden = true;
+      return;
+    }
+
+    section.hidden = false;
     signedIn = true;
     load();
   });
-
   window.addEventListener("skillpulse:modules-changed", () => load());
 })();

@@ -10,10 +10,45 @@
   <script src="modules.js" defer></script>
   <script src="module-checks.js" defer></script>
  <script src="support.js" defer></script>
+  <script src="tutor-reviews.js" defer></script>
+  <script src="tutor-dashboard.js" defer></script>
+  <script src="certificate.js" defer></script>
   <script src="auth.js" defer></script>
 </head>
 <body>
-  <div class="app-shell">
+  <main id="login-page" class="login-page">
+    <section class="login-panel">
+      <a class="login-brand" href="/">SkillPulse</a>
+      <p class="eyebrow">YOUR LEARNING JOURNEY</p>
+      <h1>Make every learning step count.</h1>
+      <p class="login-lead">
+        Sign in to continue your course, check your understanding,
+        and see the next step toward your goals.
+      </p>
+      <div class="login-highlights">
+        <div><span>01</span><p>Follow your learning path</p></div>
+        <div><span>02</span><p>Practise and track your progress</p></div>
+        <div><span>03</span><p>Get support when you need it</p></div>
+      </div>
+      <div id="login-actions" class="login-actions"></div>
+      <p id="login-status" class="login-status" role="status" aria-live="polite">
+        Sign in with your SkillPulse account to open your workspace.
+      </p>
+    </section>
+    <aside class="login-art" aria-label="Learning and progress">
+      <div class="login-art-card">
+        <span class="login-art-kicker">THE SKILLPULSE LEARNING PULSE</span>
+        <strong>Understand.<br>Practise.<br>Progress.</strong>
+        <div class="pulse-route" aria-label="Learning journey milestones">
+          <div class="pulse-stop"><span>01</span><small>Understand</small></div>
+          <div class="pulse-stop"><span>02</span><small>Practise</small></div>
+          <div class="pulse-stop"><span>03</span><small>Progress</small></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="#overview">SkillPulse</a>
       <p class="sidebar-caption">LEARNER WORKSPACE</p>

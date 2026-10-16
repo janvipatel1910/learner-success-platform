@@ -9,11 +9,15 @@ from skillpulse.api.routes.blocker_interventions import (
     router as blocker_intervention_router,
 )
 from skillpulse.api.routes.catalog import router as catalog_router
+from skillpulse.api.routes.certificate_eligibility import (
+    router as certificate_eligibility_router,
+)
+from skillpulse.api.routes.certificate_issuance import router as certificate_issuance_router
 from skillpulse.api.routes.class_sessions import router as class_session_router
 from skillpulse.api.routes.enrollments import router as enrollment_router
-from skillpulse.api.routes.health import router as health_router
 from skillpulse.api.routes.final_project_reviews import router as final_project_review_router
 from skillpulse.api.routes.final_projects import router as final_project_router
+from skillpulse.api.routes.health import router as health_router
 from skillpulse.api.routes.module_assessments import router as module_assessment_router
 from skillpulse.api.routes.module_progress import router as module_progress_router
 from skillpulse.api.routes.readiness import router as readiness_router
@@ -101,6 +105,14 @@ def create_application(settings: Settings | None = None) -> FastAPI:
         prefix=application_settings.api_prefix,
     )
 
+    application.include_router(
+        certificate_eligibility_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        certificate_issuance_router,
+        prefix=application_settings.api_prefix,
+    )
     @application.get("/", include_in_schema=False)
     def service_information() -> dict[str, str]:
         return {

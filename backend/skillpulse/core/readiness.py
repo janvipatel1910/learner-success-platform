@@ -1,5 +1,5 @@
+from collections.abc import Mapping
 from math import isclose, isfinite
-from typing import Mapping
 
 COMPONENTS = (
     "quiz",

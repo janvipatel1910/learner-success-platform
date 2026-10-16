@@ -4,8 +4,8 @@ import os
 from uuid import UUID
 
 import pytest
-
 from scripts.seed_synthetic_data import load_synthetic_data
+
 from skillpulse.db import readiness as repository
 
 pytestmark = [
@@ -140,6 +140,7 @@ def test_attendance_counts_only_eligible_sessions(monkeypatch) -> None:
     from uuid import uuid4
 
     from sqlalchemy import text
+
     from skillpulse.db.connection import get_engine
 
     temporary_cohort_id = uuid4()
@@ -274,6 +275,7 @@ def test_snapshot_is_saved_and_invalid_scope_is_rejected(monkeypatch):
     from types import SimpleNamespace
 
     from sqlalchemy import text
+
     from skillpulse.db.connection import get_engine
 
     with get_engine().connect() as connection:
@@ -371,6 +373,7 @@ def test_snapshot_history_order_pagination_and_scope(monkeypatch):
     from uuid import uuid4
 
     from sqlalchemy import text
+
     from skillpulse.db.connection import get_engine
 
     temporary_cohort_id = uuid4()
