@@ -4,8 +4,13 @@
   const domain =
     "https:" + "//eu-west-2wvizwj4bd.auth.eu-west-2.amazoncognito.com";
   const clientId = "7nqmgj00fja4vkcr0in7lj4oja";
-  const redirectUri = "http:" + "//localhost:5173/";
-  const apiBase = "http:" + "//localhost:8000/api/v1";
+  // Local development uses the Vite dev server and the local API;
+  // the deployed site serves the API from the same CloudFront address.
+  const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+  const redirectUri = location.origin + "/";
+  const apiBase = isLocal
+    ? "http:" + "//localhost:8000/api/v1"
+    : location.origin + "/api/v1";
   const storageKey = "skillpulse-login";
   const status = document.getElementById("login-status");
   const account = document.querySelector(".account-status");
@@ -48,10 +53,6 @@
   }
 
   async function signIn() {
-    if (location.origin + "/" !== redirectUri) {
-      throw new Error("Open the dashboard at localhost:5173 to sign in.");
-    }
-
     const verifier = randomValue();
     const state = randomValue();
     const digest = await crypto.subtle.digest(

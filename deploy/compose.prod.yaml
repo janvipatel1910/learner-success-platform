@@ -1,0 +1,52 @@
+# Production-style stack for the SkillPulse API on a single EC2 instance.
+# The image is built on the server by deploy/deploy.sh; nothing is built here.
+name: skillpulse
+
+services:
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: skillpulse
+      POSTGRES_USER: skillpulse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - skillpulse_postgres_data:/var/lib/postgresql/data
+    # No "ports:" here: PostgreSQL is only reachable from the other containers.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillpulse -d skillpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  migration:
+    image: skillpulse-api:latest
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    environment: &api-environment
+      ENVIRONMENT: ${ENVIRONMENT:-staging}
+      POSTGRES_DB: skillpulse
+      POSTGRES_USER: skillpulse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      COGNITO_REGION: ${COGNITO_REGION:?COGNITO_REGION is required}
+      COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID:?COGNITO_USER_POOL_ID is required}
+      COGNITO_APP_CLIENT_ID: ${COGNITO_APP_CLIENT_ID:?COGNITO_APP_CLIENT_ID is required}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    image: skillpulse-api:latest
+    environment: *api-environment
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  skillpulse_postgres_data:
