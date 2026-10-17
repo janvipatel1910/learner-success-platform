@@ -12,3 +12,8 @@ output "website_url" {
   description = "Public HTTPS address of SkillPulse."
   value       = "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
+
+output "backend_instance_id" {
+  description = "EC2 instance running the API. Connect with: aws ssm start-session --target <id>"
+  value       = aws_instance.backend.id
+}

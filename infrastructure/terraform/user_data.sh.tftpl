@@ -1,0 +1,29 @@
+#!/bin/bash
+# First-boot setup for the SkillPulse API server (Amazon Linux 2023, arm64).
+set -euxo pipefail
+
+dnf install -y docker git
+systemctl enable --now docker
+
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-aarch64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+git clone --depth 1 --branch "${git_ref}" \
+  https://github.com/janvipatel1910/learner-success-platform.git /opt/skillpulse
+
+POSTGRES_PASSWORD=$(aws ssm get-parameter --region "${aws_region}" \
+  --name "${password_parameter}" --with-decryption \
+  --query Parameter.Value --output text)
+
+umask 077
+cat > /opt/skillpulse/deploy/.env <<ENV
+ENVIRONMENT=staging
+POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+COGNITO_REGION=${aws_region}
+COGNITO_USER_POOL_ID=${cognito_user_pool_id}
+COGNITO_APP_CLIENT_ID=${cognito_app_client_id}
+ENV
+
+/opt/skillpulse/deploy/deploy.sh "${git_ref}"
