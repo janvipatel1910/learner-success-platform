@@ -14,4 +14,9 @@ docker build --tag skillpulse-api:latest --file backend/Dockerfile .
 docker compose --env-file deploy/.env --file deploy/compose.prod.yaml up --detach --remove-orphans
 docker image prune --force
 
+# Install or refresh the daily database backup timer.
+install -m 0644 deploy/skillpulse-backup.service deploy/skillpulse-backup.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now skillpulse-backup.timer
+
 echo "Deployed $(git rev-parse --short HEAD)"
