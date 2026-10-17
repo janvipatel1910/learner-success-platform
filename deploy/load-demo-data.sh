@@ -19,9 +19,13 @@ done
 
 if [[ -n "${1:-}" ]]; then
   echo "Linking Cognito user to Demo Learner One"
+  # psql only substitutes :'sub' in SQL read from stdin, not in -c commands.
   "${COMPOSE[@]}" exec -T database \
-    psql -v ON_ERROR_STOP=1 -v sub="$1" -U skillpulse -d skillpulse \
-    -c "UPDATE users SET auth_subject = :'sub' WHERE id = '20000000-0000-0000-0000-000000000003';"
+    psql -v ON_ERROR_STOP=1 -v sub="$1" -U skillpulse -d skillpulse <<'SQL'
+UPDATE users
+SET auth_subject = :'sub'
+WHERE id = '20000000-0000-0000-0000-000000000003';
+SQL
 fi
 
 echo "Demo data loaded."
