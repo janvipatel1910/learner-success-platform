@@ -20,6 +20,7 @@ from skillpulse.api.routes.final_projects import router as final_project_router
 from skillpulse.api.routes.health import router as health_router
 from skillpulse.api.routes.module_assessments import router as module_assessment_router
 from skillpulse.api.routes.module_progress import router as module_progress_router
+from skillpulse.api.routes.practice_assessments import router as practice_assessment_router
 from skillpulse.api.routes.readiness import router as readiness_router
 from skillpulse.api.routes.session_engagement import (
     router as session_engagement_router,
@@ -111,6 +112,10 @@ def create_application(settings: Settings | None = None) -> FastAPI:
     )
     application.include_router(
         certificate_issuance_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        practice_assessment_router,
         prefix=application_settings.api_prefix,
     )
     @application.get("/", include_in_schema=False)

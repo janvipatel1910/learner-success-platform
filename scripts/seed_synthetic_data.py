@@ -17,6 +17,7 @@ SCRIPTS_DIRECTORY = Path(__file__).resolve().parent
 DEMO_CONTENT_FILES = (
     SCRIPTS_DIRECTORY / "seed_demo_module_checks.sql",
     SCRIPTS_DIRECTORY / "seed_demo_final_project.sql",
+    SCRIPTS_DIRECTORY / "seed_demo_practice.sql",
 )
 
 
