@@ -63,6 +63,19 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Show OIDC token claims (diagnostic, no secrets)
+        run: |
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c "import sys,json;print(json.load(sys.stdin)['value'])")
+          python3 - "$TOKEN" <<'PY'
+          import base64, json, sys
+          payload = sys.argv[1].split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+          for key in ("sub", "aud", "iss"):
+              print(f"::notice title=OIDC {key}::{claims.get(key)}")
+          PY
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v5
         with:
