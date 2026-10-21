@@ -4,10 +4,12 @@
 # temporary role session, and only runs on the main branch of this repo may.
 # ---------------------------------------------------------------------------
 
-variable "github_repository" {
-  description = "GitHub repository allowed to deploy (owner/name)."
-  type        = string
-  default     = "janvipatel1910/learner-success-platform"
+variable "github_oidc_subjects" {
+  description = "Exact OIDC 'sub' claims allowed to deploy (GitHub now includes immutable owner and repo IDs)."
+  type        = list(string)
+  default = [
+    "repo:janvipatel1910@84894121/learner-success-platform@1340690840:ref:refs/heads/main",
+  ]
 }
 
 variable "create_github_oidc_provider" {
@@ -55,7 +57,7 @@ data "aws_iam_policy_document" "github_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:ref:refs/heads/main"]
+      values   = var.github_oidc_subjects
     }
   }
 }
