@@ -2031,3 +2031,96 @@ footer {
     font-size: 16px;
   }
 }
+
+/* Practice quizzes and exams */
+.practice-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.practice-item {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.practice-item h3,
+.practice-heading h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.practice-item p {
+  margin: 4px 0;
+}
+
+.practice-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.practice-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.practice-clock {
+  margin: 0;
+  color: var(--primary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-question {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.practice-question legend {
+  padding: 0 6px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.practice-option {
+  display: block;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.notice.warning {
+  border-color: #f2d49b;
+  background: #fff8e8;
+  color: #6b4e12;
+}
+
+.practice-review li {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-left: 4px solid var(--border);
+  border-radius: 6px;
+  background: #f8fafd;
+}
+
+.practice-review li.is-correct {
+  border-left-color: #2e8b57;
+}
+
+.practice-review li.is-wrong {
+  border-left-color: #c0392b;
+}
+
+.practice-review p {
+  margin: 4px 0;
+}
+
+.practice-review-question {
+  color: var(--text);
+  font-weight: 600;
+}
