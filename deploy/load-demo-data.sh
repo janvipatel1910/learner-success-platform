@@ -10,7 +10,8 @@ COMPOSE=(docker compose --env-file deploy/.env --file deploy/compose.prod.yaml)
 for sql_file in \
   data/sample/skillpulse_seed.sql \
   scripts/seed_demo_module_checks.sql \
-  scripts/seed_demo_final_project.sql
+  scripts/seed_demo_final_project.sql \
+  scripts/seed_demo_practice.sql
 do
   echo "Loading ${sql_file}"
   "${COMPOSE[@]}" exec -T database \
