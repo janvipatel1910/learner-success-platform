@@ -146,6 +146,11 @@ def test_current_user_rejects_unregistered_subject(
         "find_active_user_by_subject",
         lambda _: None,
     )
+    monkeypatch.setattr(
+        auth_dependencies,
+        "activate_invited_user",
+        lambda _: False,
+    )
 
     response = client.get(
         "/api/v1/auth/me",
@@ -157,6 +162,45 @@ def test_current_user_rejects_unregistered_subject(
         "detail": "Authenticated user is not authorized."
     }
 
+
+
+def test_current_user_activates_invited_subject_on_first_sign_in(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    verifier = StubTokenVerifier(claims={"sub": "invited-subject"})
+    user = build_active_user()
+    lookups = iter([None, user])
+    activated_subjects: list[str] = []
+
+    def activate(subject: str) -> bool:
+        activated_subjects.append(subject)
+        return True
+
+    monkeypatch.setattr(
+        auth_dependencies,
+        "get_token_verifier",
+        lambda: verifier,
+    )
+    monkeypatch.setattr(
+        auth_dependencies,
+        "find_active_user_by_subject",
+        lambda _: next(lookups),
+    )
+    monkeypatch.setattr(
+        auth_dependencies,
+        "activate_invited_user",
+        activate,
+    )
+
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": "Bearer trusted-token"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "learner.one@skillpulse.example"
+    assert activated_subjects == ["invited-subject"]
 
 def test_current_user_fails_closed_when_authentication_is_unconfigured(
     client: TestClient,

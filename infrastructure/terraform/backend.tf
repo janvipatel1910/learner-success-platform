@@ -96,6 +96,26 @@ resource "aws_iam_role_policy" "backend_read_secret" {
   policy = data.aws_iam_policy_document.backend_read_secret.json
 }
 
+# Lets the API invite people: create a Cognito user (emails a temporary password)
+# and delete it again if saving the invitation to the database fails.
+data "aws_iam_policy_document" "backend_cognito_invites" {
+  statement {
+    actions = [
+      "cognito-idp:AdminCreateUser",
+      "cognito-idp:AdminDeleteUser",
+    ]
+    resources = [
+      "arn:aws:cognito-idp:${var.aws_region}:${data.aws_caller_identity.current.account_id}:userpool/${var.cognito_user_pool_id}",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "backend_cognito_invites" {
+  name   = "cognito-invite-users"
+  role   = aws_iam_role.backend.id
+  policy = data.aws_iam_policy_document.backend_cognito_invites.json
+}
+
 resource "aws_iam_instance_profile" "backend" {
   name = "${var.project_name}-backend"
   role = aws_iam_role.backend.name
@@ -119,6 +139,9 @@ resource "aws_instance" "backend" {
 
   metadata_options {
     http_tokens = "required" # IMDSv2 only
+    # 2 hops so the API inside its Docker container can reach the instance
+    # metadata service and use this instance role (needed for Cognito invites).
+    http_put_response_hop_limit = 2
   }
 
   root_block_device {

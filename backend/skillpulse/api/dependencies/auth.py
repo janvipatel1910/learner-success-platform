@@ -19,6 +19,7 @@ from skillpulse.db.identity import (
     MembershipRole,
     find_active_user_by_subject,
 )
+from skillpulse.db.invitations import activate_invited_user
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -71,6 +72,10 @@ def get_current_user(
 
     try:
         user = find_active_user_by_subject(subject)
+
+        # First sign-in of an invited user: activate them, then look them up again.
+        if user is None and activate_invited_user(subject):
+            user = find_active_user_by_subject(subject)
     except SQLAlchemyError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

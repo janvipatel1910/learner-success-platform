@@ -18,6 +18,7 @@ from skillpulse.api.routes.enrollments import router as enrollment_router
 from skillpulse.api.routes.final_project_reviews import router as final_project_review_router
 from skillpulse.api.routes.final_projects import router as final_project_router
 from skillpulse.api.routes.health import router as health_router
+from skillpulse.api.routes.invitations import router as invitation_router
 from skillpulse.api.routes.module_assessments import router as module_assessment_router
 from skillpulse.api.routes.module_progress import router as module_progress_router
 from skillpulse.api.routes.practice_assessments import router as practice_assessment_router
@@ -116,6 +117,10 @@ def create_application(settings: Settings | None = None) -> FastAPI:
     )
     application.include_router(
         practice_assessment_router,
+        prefix=application_settings.api_prefix,
+    )
+    application.include_router(
+        invitation_router,
         prefix=application_settings.api_prefix,
     )
     @application.get("/", include_in_schema=False)
