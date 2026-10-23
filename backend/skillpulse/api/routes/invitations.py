@@ -17,7 +17,11 @@ from skillpulse.core.cognito_admin import (
     invite_cognito_user,
 )
 from skillpulse.db.identity import MembershipRole
-from skillpulse.db.invitations import UserAlreadyExistsError, create_invitation
+from skillpulse.db.invitations import (
+    CohortNotFoundError,
+    UserAlreadyExistsError,
+    create_invitation,
+)
 from skillpulse.schemas.invitations import InvitationCreate, InvitationResponse
 
 logger = logging.getLogger(__name__)
@@ -36,6 +40,7 @@ AdminAccess = Annotated[
 
 _ALREADY_EXISTS = "A user with this email already exists."
 _UNAVAILABLE = "The invitation service is unavailable."
+_COHORT_NOT_FOUND = "Cohort was not found."
 
 
 def _undo_cognito_user(email: str) -> None:
@@ -77,7 +82,11 @@ def create_organization_invitation(
             full_name=payload.full_name,
             role=payload.role,
             auth_subject=auth_subject,
+            cohort_id=payload.cohort_id,
         )
+    except CohortNotFoundError as exc:
+        _undo_cognito_user(payload.email)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, _COHORT_NOT_FOUND) from exc
     except UserAlreadyExistsError as exc:
         _undo_cognito_user(payload.email)
         raise HTTPException(status.HTTP_409_CONFLICT, _ALREADY_EXISTS) from exc
@@ -92,4 +101,6 @@ def create_organization_invitation(
         email=payload.email,
         full_name=payload.full_name,
         role=payload.role,
+        # Admins are not placed in a cohort, so report no cohort for them.
+        cohort_id=None if payload.role is MembershipRole.ADMIN else payload.cohort_id,
     )

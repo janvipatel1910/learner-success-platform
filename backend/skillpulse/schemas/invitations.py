@@ -16,6 +16,7 @@ class InvitationCreate(BaseModel):
     email: str = Field(min_length=3, max_length=254, pattern=_EMAIL_PATTERN)
     full_name: str = Field(min_length=1, max_length=150)
     role: MembershipRole = MembershipRole.STUDENT
+    cohort_id: UUID | None = None
 
     model_config = ConfigDict(
         extra="forbid",
@@ -38,4 +39,5 @@ class InvitationResponse(BaseModel):
     email: str
     full_name: str
     role: MembershipRole
+    cohort_id: UUID | None = None
     status: Literal["invited"] = "invited"

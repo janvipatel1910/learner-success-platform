@@ -24,7 +24,8 @@
         "p",
         "",
         "They will receive an email with a temporary password. " +
-          "Their account becomes active the first time they sign in."
+          "Learners and tutors join the current course cohort, and " +
+          "everything becomes active the first time they sign in."
       )
     );
 
@@ -85,7 +86,9 @@
           body: JSON.stringify({
             full_name: fullName.value.trim(),
             email: email.value.trim(),
-            role: role.value
+            role: role.value,
+            // One pilot cohort for now; a cohort drop-down can replace this later.
+            cohort_id: pilotContext.cohortId
           })
         });
         result.textContent =
