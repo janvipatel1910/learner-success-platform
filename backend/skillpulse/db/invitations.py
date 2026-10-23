@@ -14,6 +14,10 @@ class UserAlreadyExistsError(Exception):
     """Raised when an invited email or Cognito subject already belongs to a user."""
 
 
+class CohortNotFoundError(Exception):
+    """Raised when the chosen cohort does not belong to the inviting organisation."""
+
+
 @dataclass(frozen=True, slots=True)
 class CreatedInvitation:
     """The database rows created for one invitation."""
@@ -58,6 +62,29 @@ _INSERT_INVITED_MEMBERSHIP = text(
     """
 )
 
+_INSERT_INVITED_COHORT_MEMBERSHIP = text(
+    """
+    INSERT INTO cohort_memberships (
+        cohort_id,
+        user_id,
+        cohort_role,
+        status
+    )
+    SELECT
+        h.id,
+        :user_id,
+        CAST(:cohort_role AS cohort_role),
+        'invited'
+    FROM cohorts AS h
+    JOIN courses AS c
+        ON c.id = h.course_id
+    WHERE
+        h.id = :cohort_id
+        AND c.organization_id = :organization_id
+    RETURNING id
+    """
+)
+
 _ACTIVATE_INVITED_USER = text(
     """
     UPDATE users
@@ -85,6 +112,25 @@ _ACTIVATE_INVITED_MEMBERSHIPS = text(
     """
 )
 
+_ACTIVATE_INVITED_COHORT_MEMBERSHIPS = text(
+    """
+    UPDATE cohort_memberships
+    SET
+        status = 'active',
+        enrolled_at = NOW(),
+        updated_at = NOW()
+    WHERE
+        user_id = :user_id
+        AND status = 'invited'
+    """
+)
+
+# Admins run the organisation; only learners and tutors are placed in a cohort.
+_COHORT_ROLE_FOR = {
+    MembershipRole.STUDENT: "learner",
+    MembershipRole.TUTOR: "tutor",
+}
+
 
 def create_invitation(
     *,
@@ -93,10 +139,11 @@ def create_invitation(
     full_name: str,
     role: MembershipRole,
     auth_subject: str,
+    cohort_id: UUID | None = None,
 ) -> CreatedInvitation:
-    """Create an invited user and their invited organisation membership.
+    """Create an invited user, their organisation membership and optional cohort place.
 
-    Both rows are written in one transaction, so either both exist or neither does.
+    All rows are written in one transaction, so either all exist or none do.
     """
 
     try:
@@ -118,6 +165,22 @@ def create_invitation(
                     "role": role.value,
                 },
             ).scalar_one()
+
+            cohort_role = _COHORT_ROLE_FOR.get(role)
+            if cohort_id is not None and cohort_role is not None:
+                cohort_membership_id = connection.execute(
+                    _INSERT_INVITED_COHORT_MEMBERSHIP,
+                    {
+                        "cohort_id": cohort_id,
+                        "organization_id": organization_id,
+                        "user_id": user_id,
+                        "cohort_role": cohort_role,
+                    },
+                ).scalar_one_or_none()
+
+                if cohort_membership_id is None:
+                    # Raising here rolls back the user and membership rows too.
+                    raise CohortNotFoundError(str(cohort_id))
     except IntegrityError as exc:
         raise UserAlreadyExistsError(email) from exc
 
@@ -141,6 +204,10 @@ def activate_invited_user(auth_subject: str) -> bool:
 
         connection.execute(
             _ACTIVATE_INVITED_MEMBERSHIPS,
+            {"user_id": user_id},
+        )
+        connection.execute(
+            _ACTIVATE_INVITED_COHORT_MEMBERSHIPS,
             {"user_id": user_id},
         )
 

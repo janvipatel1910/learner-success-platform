@@ -13,11 +13,16 @@ from skillpulse.db.identity import (
     MembershipRole,
     OrganizationMembership,
 )
-from skillpulse.db.invitations import CreatedInvitation, UserAlreadyExistsError
+from skillpulse.db.invitations import (
+    CohortNotFoundError,
+    CreatedInvitation,
+    UserAlreadyExistsError,
+)
 
 ORGANIZATION_ID = UUID("10000000-0000-0000-0000-000000000001")
 NEW_USER_ID = UUID("20000000-0000-0000-0000-000000000099")
 NEW_MEMBERSHIP_ID = UUID("30000000-0000-0000-0000-000000000099")
+COHORT_ID = UUID("42000000-0000-0000-0000-000000000001")
 INVITATIONS_PATH = "/api/v1/admin/invitations"
 HEADERS = {"X-Organization-ID": str(ORGANIZATION_ID)}
 
@@ -97,6 +102,7 @@ def test_admin_can_invite_a_learner(services: FakeServices) -> None:
         "email": "new.learner@example.com",
         "full_name": "New Learner",
         "role": "student",
+        "cohort_id": None,
         "status": "invited",
     }
     assert services.invited == ["new.learner@example.com"]
@@ -163,4 +169,39 @@ def test_database_failure_undoes_cognito_user(services: FakeServices) -> None:
     response = client.post(INVITATIONS_PATH, json=valid_payload(), headers=HEADERS)
 
     assert response.status_code == 503
+    assert services.deleted == ["new.learner@example.com"]
+
+
+def test_invite_places_learner_in_chosen_cohort(services: FakeServices) -> None:
+    client = create_client(MembershipRole.ADMIN)
+    payload = valid_payload() | {"cohort_id": str(COHORT_ID)}
+
+    response = client.post(INVITATIONS_PATH, json=payload, headers=HEADERS)
+
+    assert response.status_code == 201
+    assert response.json()["cohort_id"] == str(COHORT_ID)
+    assert services.saved[0]["cohort_id"] == COHORT_ID
+
+
+def test_admin_invite_reports_no_cohort(services: FakeServices) -> None:
+    client = create_client(MembershipRole.ADMIN)
+    payload = valid_payload() | {"role": "admin", "cohort_id": str(COHORT_ID)}
+
+    response = client.post(INVITATIONS_PATH, json=payload, headers=HEADERS)
+
+    assert response.status_code == 201
+    assert response.json()["cohort_id"] is None
+
+
+def test_unknown_cohort_returns_not_found_and_undoes_cognito_user(
+    services: FakeServices,
+) -> None:
+    services.database_error = CohortNotFoundError(str(COHORT_ID))
+    client = create_client(MembershipRole.ADMIN)
+    payload = valid_payload() | {"cohort_id": str(COHORT_ID)}
+
+    response = client.post(INVITATIONS_PATH, json=payload, headers=HEADERS)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Cohort was not found."}
     assert services.deleted == ["new.learner@example.com"]
