@@ -78,3 +78,28 @@ def test_openapi_schema_contains_system_endpoints(
     assert response.status_code == 200
     assert "/health" in paths
     assert "/ready" in paths
+
+
+@pytest.mark.parametrize("path", ["/api/health", "/api/ready"])
+def test_health_checks_are_reachable_under_api_prefix(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    path: str,
+) -> None:
+    monkeypatch.setattr(health_routes, "database_is_ready", lambda: True)
+
+    response = client.get(path)
+
+    assert response.status_code == 200
+
+
+def test_api_readiness_returns_503_when_database_is_unavailable(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(health_routes, "database_is_ready", lambda: False)
+
+    response = client.get("/api/ready")
+
+    assert response.status_code == 503
+    assert response.json()["database"] == "unavailable"

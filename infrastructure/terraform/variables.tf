@@ -33,3 +33,8 @@ variable "cognito_app_client_id" {
   type        = string
   default     = "7nqmgj00fja4vkcr0in7lj4oja"
 }
+
+variable "alert_email" {
+  description = "Email address that receives monitoring alerts. Set it in terraform.tfvars (not committed)."
+  type        = string
+}
