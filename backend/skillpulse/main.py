@@ -58,6 +58,13 @@ def create_application(settings: Settings | None = None) -> FastAPI:
     )
 
     application.include_router(health_router)
+    # Same checks under /api, so they can be reached through CloudFront
+    # (which only forwards /api/* to the server) by the uptime monitor.
+    application.include_router(
+        health_router,
+        prefix="/api",
+        include_in_schema=False,
+    )
     application.include_router(
         auth_router,
         prefix=application_settings.api_prefix,
