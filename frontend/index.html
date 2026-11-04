@@ -21,35 +21,143 @@
 </head>
 <body>
   <main id="login-page" class="login-page">
-    <section class="login-panel">
+    <header class="landing-nav">
       <a class="login-brand" href="/">SkillPulse</a>
-      <p class="eyebrow">YOUR LEARNING JOURNEY</p>
-      <h1>Make every learning step count.</h1>
-      <p class="login-lead">
-        Sign in to continue your course, check your understanding,
-        and see the next step toward your goals.
-      </p>
-      <div class="login-highlights">
-        <div><span>01</span><p>Follow your learning path</p></div>
-        <div><span>02</span><p>Practise and track your progress</p></div>
-        <div><span>03</span><p>Get support when you need it</p></div>
-      </div>
-      <div id="login-actions" class="login-actions"></div>
-      <p id="login-status" class="login-status" role="status" aria-live="polite">
-        Sign in with your SkillPulse account to open your workspace.
-      </p>
-    </section>
-    <aside class="login-art" aria-label="Learning and progress">
-      <div class="login-art-card">
-        <span class="login-art-kicker">THE SKILLPULSE LEARNING PULSE</span>
-        <strong>Understand.<br>Practise.<br>Progress.</strong>
-        <div class="pulse-route" aria-label="Learning journey milestones">
-          <div class="pulse-stop"><span>01</span><small>Understand</small></div>
-          <div class="pulse-stop"><span>02</span><small>Practise</small></div>
-          <div class="pulse-stop"><span>03</span><small>Progress</small></div>
+      <nav aria-label="Home page sections">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#trust">Reliability</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="landing-nav-signin" href="#top">Sign in</a>
+    </header>
+
+    <div class="landing-hero" id="top">
+      <section class="login-panel">
+        <p class="eyebrow">YOUR LEARNING JOURNEY</p>
+        <h1>Make every learning step count.</h1>
+        <p class="login-lead">
+          Sign in to continue your course, check your understanding,
+          and see the next step toward your goals.
+        </p>
+        <div id="login-actions" class="login-actions"></div>
+        <p id="login-status" class="login-status" role="status" aria-live="polite">
+          SkillPulse is invite-only. Sign in with the email address you were invited with.
+        </p>
+        <ul class="login-features" aria-label="What you can do in SkillPulse">
+          <li>
+            <strong>Learning path</strong>
+            <p>Work through modules in order and unlock the next one.</p>
+          </li>
+          <li>
+            <strong>Practice</strong>
+            <p>Quizzes and timed exams, with an explanation for every answer.</p>
+          </li>
+          <li>
+            <strong>Support</strong>
+            <p>Tell your tutor where you are stuck and follow their reply.</p>
+          </li>
+        </ul>
+      </section>
+      <aside class="login-art" aria-label="Learning and progress">
+        <div class="login-art-card">
+          <span class="login-art-kicker">THE SKILLPULSE LEARNING PULSE</span>
+          <strong>Understand.<br>Practise.<br>Progress.</strong>
+          <div class="pulse-route" aria-label="Learning journey milestones">
+            <div class="pulse-stop"><span aria-hidden="true"></span><small>Understand</small></div>
+            <div class="pulse-stop"><span aria-hidden="true"></span><small>Practise</small></div>
+            <div class="pulse-stop"><span aria-hidden="true"></span><small>Progress</small></div>
+          </div>
         </div>
+      </aside>
+    </div>
+
+    <section class="landing-section" id="roles" aria-labelledby="roles-title">
+      <p class="eyebrow">ONE PLACE FOR EVERYONE</p>
+      <h2 id="roles-title">Built for the people who make learning work</h2>
+      <div class="landing-grid three">
+        <article class="landing-card">
+          <h3>Learners</h3>
+          <ul>
+            <li>Follow a clear path of modules, one step at a time</li>
+            <li>Practise with quizzes and timed exams</li>
+            <li>See your exam readiness and what to do next</li>
+          </ul>
+        </article>
+        <article class="landing-card">
+          <h3>Tutors</h3>
+          <ul>
+            <li>See how well each class was understood</li>
+            <li>Pick up learner blockers and record the help given</li>
+            <li>Review final projects and plan follow-up classes</li>
+          </ul>
+        </article>
+        <article class="landing-card">
+          <h3>Admins</h3>
+          <ul>
+            <li>Invite learners and tutors by email</li>
+            <li>New learners join the right course straight away</li>
+            <li>Keep the academy invite-only</li>
+          </ul>
+        </article>
       </div>
-    </aside>
+    </section>
+
+    <section class="landing-section" id="how-it-works" aria-labelledby="loop-title">
+      <p class="eyebrow">HOW IT WORKS</p>
+      <h2 id="loop-title">From “I’m stuck” to “I’ve got it”</h2>
+      <p class="landing-lead">
+        Most platforms only track what was completed. SkillPulse helps tutors
+        notice who is struggling, and why, before it is too late.
+      </p>
+      <ol class="landing-loop">
+        <li><strong>Reflect</strong><p>After each class, learners mark it Green, Yellow or Red.</p></li>
+        <li><strong>Ask for help</strong><p>A learner reports a blocker in a few words.</p></li>
+        <li><strong>Support</strong><p>A tutor takes it, helps, and records what they did.</p></li>
+        <li><strong>Progress</strong><p>The blocker is resolved and readiness updates.</p></li>
+      </ol>
+    </section>
+
+    <section class="landing-section" id="features" aria-labelledby="features-title">
+      <p class="eyebrow">FEATURES</p>
+      <h2 id="features-title">Everything a learner needs to get exam-ready</h2>
+      <div class="landing-grid three">
+        <article class="landing-card"><h3>Guided learning path</h3><p>Modules unlock in order, so learners always know what comes next.</p></article>
+        <article class="landing-card"><h3>Practice and timed exams</h3><p>Every answer comes with an explanation, so mistakes turn into learning.</p></article>
+        <article class="landing-card"><h3>Understanding checks</h3><p>A quick Green, Yellow or Red after class tells the tutor where to focus.</p></article>
+        <article class="landing-card"><h3>Exam readiness</h3><p>One score built from quizzes, mock exams, labs, attendance and blockers.</p></article>
+        <article class="landing-card"><h3>Final project review</h3><p>Learners submit a capstone project and tutors review it in one place.</p></article>
+        <article class="landing-card"><h3>Certificates</h3><p>Learners who meet every requirement can be issued a certificate.</p></article>
+      </div>
+    </section>
+
+    <section class="landing-section" id="trust" aria-labelledby="trust-title">
+      <p class="eyebrow">RELIABLE AND PRIVATE</p>
+      <h2 id="trust-title">Built on AWS, looked after every day</h2>
+      <div class="landing-grid four">
+        <article class="landing-card"><h3>Hosted in London</h3><p>Runs on Amazon Web Services in the London region.</p></article>
+        <article class="landing-card"><h3>Invite-only sign-in</h3><p>Accounts are created by an admin and protected by Amazon Cognito.</p></article>
+        <article class="landing-card"><h3>Nightly backups</h3><p>The database is backed up every night, encrypted, and kept for 35 days.</p></article>
+        <article class="landing-card"><h3>Monitored</h3><p>The site is checked every 5 minutes, with automatic alerts if it stops.</p></article>
+      </div>
+    </section>
+
+    <section class="landing-section" id="faq" aria-labelledby="faq-title">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq-title">Questions</h2>
+      <div class="landing-faq">
+        <details><summary>How do I get an account?</summary><p>SkillPulse is invite-only. Your tutor or academy admin invites you, and you receive an email with a temporary password. There is no public sign-up.</p></details>
+        <details><summary>Which course is available?</summary><p>The current course is AWS Solutions Architect Associate readiness, covering networking, VPC, storage and S3.</p></details>
+        <details><summary>Who can see my progress?</summary><p>You, the tutors of your course and the admins of your academy. Other learners cannot see your results.</p></details>
+        <details><summary>Can I use it on my phone?</summary><p>Yes. SkillPulse works in any modern browser on phones, tablets and computers.</p></details>
+        <details><summary>Is the readiness score a guarantee?</summary><p>No. It is a guide to help you decide what to practise next, not a promise of exam success.</p></details>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <span>SkillPulse · A learner-success platform built by Janvi Patel</span>
+      <a href="#top">Back to top</a>
+    </footer>
   </main>
 
   <div class="app-shell" hidden>
