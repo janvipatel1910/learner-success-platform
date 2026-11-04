@@ -84,17 +84,20 @@ resource "aws_lambda_permission" "uptime_check_schedule" {
   source_arn    = aws_cloudwatch_event_rule.uptime_check.arn
 }
 
-# Two failed checks within 10 minutes = the site is really down, not a blip.
+# Failed checks in 2 of the last 3 five-minute blocks = really down, not a blip.
+# Using one block per check keeps the alarm steady during an outage, so one
+# outage sends one ALARM email and one OK email (not an email every few blocks).
 resource "aws_cloudwatch_metric_alarm" "site_not_ready" {
   alarm_name          = "${var.project_name}-site-not-ready"
-  alarm_description   = "Live /api/ready check failed twice in 10 minutes (API or database down). See docs/RUNBOOK.md."
+  alarm_description   = "Live /api/ready check failed in 2 of the last 3 checks (API or database down). See docs/RUNBOOK.md."
   namespace           = "AWS/Lambda"
   metric_name         = "Errors"
   dimensions          = { FunctionName = aws_lambda_function.uptime_check.function_name }
   statistic           = "Sum"
-  period              = 600
-  evaluation_periods  = 1
-  threshold           = 2
+  period              = 300
+  evaluation_periods  = 3
+  datapoints_to_alarm = 2
+  threshold           = 1
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.alerts.arn]
