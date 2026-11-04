@@ -67,8 +67,47 @@ data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
   name = "Managed-AllViewerExceptHostHeader"
 }
 
-data "aws_cloudfront_response_headers_policy" "security_headers" {
-  name = "Managed-SecurityHeadersPolicy"
+# Same security headers as AWS's managed "SecurityHeadersPolicy", plus
+# Cache-Control: no-cache so browsers check for a newer index.html, CSS and JS
+# after every deploy (an unchanged file is answered with a quick 304).
+resource "aws_cloudfront_response_headers_policy" "frontend" {
+  name    = "${var.project_name}-frontend-headers"
+  comment = "Security headers and always-revalidate caching for the SkillPulse frontend"
+
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      override                   = false
+    }
+
+    content_type_options {
+      override = false
+    }
+
+    frame_options {
+      frame_option = "SAMEORIGIN"
+      override     = false
+    }
+
+    xss_protection {
+      protection = true
+      mode_block = true
+      override   = false
+    }
+
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = false
+    }
+  }
+
+  custom_headers_config {
+    items {
+      header   = "Cache-Control"
+      value    = "no-cache"
+      override = true
+    }
+  }
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
@@ -117,7 +156,7 @@ resource "aws_cloudfront_distribution" "frontend" {
     cached_methods             = ["GET", "HEAD"]
     compress                   = true
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_optimized.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security_headers.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.frontend.id
   }
 
   restrictions {
