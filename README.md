@@ -51,6 +51,7 @@ flowchart LR
 | CI | GitHub Actions runs Ruff, unit tests and PostgreSQL integration tests (including an Alembic upgrade/downgrade cycle) on every pull request |
 | CD | On merge to `main`, GitHub Actions assumes a least-privilege IAM role through OIDC (no stored AWS keys), syncs the frontend, invalidates CloudFront, redeploys the API through SSM and runs smoke tests |
 | Backups | Nightly `pg_dump` to a private, encrypted, versioned S3 bucket with 35-day expiry; `deploy/restore.sh` verifies a backup in a scratch database |
+| Monitoring | CloudWatch alarms emailed through SNS: EC2 status check, CPU high, and an uptime check where a scheduled Lambda calls `/api/ready` (API and PostgreSQL) every 5 minutes; tested with a deliberate outage. See the [runbook](docs/RUNBOOK.md) |
 | Cost control | AWS Budgets alerts; free-tier eligible instance type |
 
 ### Known limitations and next steps
@@ -553,6 +554,7 @@ The validated PostgreSQL design currently includes:
 
 ## Documentation
 
+- [Operations runbook](docs/RUNBOOK.md)
 - [Product charter](docs/PRODUCT_CHARTER.md)
 - [Product data model](docs/DATA_MODEL.md)
 - [SC-001 PostgreSQL validation](docs/SC-001_VALIDATION.md)

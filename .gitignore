@@ -47,6 +47,7 @@ yarn-error.log*
 crash.log
 tfplan
 *.tfplan
+infrastructure/terraform/build/
 .aws-sam/
 
 # Private learner data and uploads
