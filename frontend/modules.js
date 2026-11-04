@@ -11,12 +11,6 @@
     "X-Organization-ID": pilotContext.organizationId
   };
 
-  // Draft study outlines for the two existing demo topics.
-  const outlines = {
-    "41000000-0000-0000-0000-000000000001": coursePreview.topics[0],
-    "41000000-0000-0000-0000-000000000002": coursePreview.topics[1]
-  };
-
   const labels = {
     locked: "Locked",
     available: "Available",
@@ -35,35 +29,17 @@
 
   function studyOutline(module) {
     const details = element("details", "topic-details");
-    const summary = element("summary", "", "View study outline");
-    details.append(summary);
+    details.append(element("summary", "", "Open study notes"));
 
-    const outline = outlines[module.topic_id];
-
-    if (outline) {
-      const objectives = element("ul", "");
-      outline.objectives.forEach((objective) => {
-        objectives.append(element("li", "", objective));
-      });
-      details.append(
-        element("h4", "", "Learning objectives"),
-        objectives,
-        element("h4", "", "Practice activity"),
-        element("p", "", outline.activity)
-      );
-    } else {
-      details.append(element(
-        "p", "", "Study content has not been published for this module."
-      ));
-    }
+    renderStudyNotes(module.topic_id, details);
 
     details.append(element(
       "p", "form-note",
-      "Draft study content. Opening this outline does not complete " +
-      "the module. Use Take module check to demonstrate your understanding."
+      "Reading the notes does not complete the module. " +
+      "When you are ready, use Take module check."
     ));
 
-    const support = element("a", "", "Need help? Report a learning blocker");
+    const support = element("a", "", "Stuck? Report a learning blocker");
     support.href = "#support";
     details.append(support);
 

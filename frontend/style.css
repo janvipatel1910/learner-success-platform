@@ -2555,3 +2555,38 @@ footer {
 #login-page .landing-loop li:nth-child(2) { border-top-color: #e0a92e; }
 #login-page .landing-loop li:nth-child(3) { border-top-color: #12706a; }
 #login-page .landing-loop li:nth-child(4) { border-top-color: #e5675e; }
+
+/* Study notes inside each module */
+.topic-details .study-intro {
+  font-size: 15px;
+}
+
+.topic-details .study-lesson {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.topic-details .study-example,
+.topic-details .study-traps {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+}
+
+.topic-details .study-example {
+  background: #eef6f3;
+}
+
+.topic-details .study-traps {
+  background: #fff6e5;
+}
+
+.topic-details .study-example h4,
+.topic-details .study-traps h4 {
+  margin-top: 0;
+}
+
+.topic-details .study-links a {
+  font-weight: 600;
+}
