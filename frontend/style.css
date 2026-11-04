@@ -2129,3 +2129,22 @@ footer {
   max-width: 520px;
   margin-top: 16px;
 }
+
+#tutor-blockers .blocker-card {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #8a97ad;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+#tutor-blockers .blocker-card[data-severity="medium"] { border-left-color: #c58a00; }
+#tutor-blockers .blocker-card[data-severity="high"],
+#tutor-blockers .blocker-card[data-severity="critical"] { border-left-color: #c0392b; }
+
+#tutor-blockers .blocker-card h3 { margin: 0 0 8px; font-size: 16px; }
+#tutor-blockers .blocker-meta { font-size: 13px; }
+#tutor-blockers .blocker-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+#tutor-blockers .blocker-tags .badge { text-transform: capitalize; }
+#tutor-blockers .blocker-action { max-width: 560px; }

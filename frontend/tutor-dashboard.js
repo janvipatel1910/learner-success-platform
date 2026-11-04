@@ -58,6 +58,18 @@
 
     const caption = document.querySelector(".sidebar-caption");
     if (caption) caption.textContent = "TUTOR WORKSPACE";
+
+    const badge = document.querySelector(".workspace-header .badge");
+    if (badge) badge.textContent = "Tutor workspace";
+    document.title = "SkillPulse | Tutor workspace";
+
+    const sidebarNote = document.querySelector(".sidebar-note");
+    if (sidebarNote) {
+      sidebarNote.replaceChildren(
+        element("strong", "", "Spot who needs help."),
+        element("p", "", "Then plan your next class.")
+      );
+    }
   }
 
   function makeMetric(label) {
