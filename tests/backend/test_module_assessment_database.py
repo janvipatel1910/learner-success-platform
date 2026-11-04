@@ -84,25 +84,31 @@ def database(monkeypatch):
             progress.start_learner_module(**CONTEXT, topic_id=VPC)
             check = checks.get_module_check(**CONTEXT, topic_id=VPC)
 
-            question = connection.execute(
+            questions = connection.execute(
                 text("""
                     SELECT q.*
                     FROM questions AS q
                     JOIN assessment_questions AS aq
                       ON aq.question_id = q.id
                     WHERE aq.assessment_id = :assessment_id
+                    ORDER BY aq.sequence_number
                 """),
                 {"assessment_id": check["assessment_id"]},
-            ).mappings().one()
+            ).mappings().all()
 
             correct = {
-                str(question["id"]): list(question["correct_answer_json"])
+                str(q["id"]): list(q["correct_answer_json"])
+                for q in questions
             }
-            wrong_option = next(
-                option for option in question["options_json"]
-                if option not in question["correct_answer_json"]
-            )
-            wrong = {str(question["id"]): [wrong_option]}
+            wrong = {
+                str(q["id"]): [
+                    next(
+                        option for option in q["options_json"]
+                        if option not in q["correct_answer_json"]
+                    )
+                ]
+                for q in questions
+            }
 
             yield connection, check, correct, wrong
         finally:
@@ -145,10 +151,43 @@ def test_pass_completes_module_and_unlocks_next(database):
             WHERE attempt_id = :attempt_id
         """),
         {"attempt_id": result["attempt_id"]},
-    ).mappings().one()
+    ).mappings().all()
 
-    assert saved["is_correct"] is True
-    assert saved["marks_awarded"] > 0
+    assert len(saved) == 5
+    assert all(row["is_correct"] is True for row in saved)
+    assert all(row["marks_awarded"] > 0 for row in saved)
+
+
+def test_check_has_five_questions_and_80_percent_pass_mark(database):
+    _, check, correct, _ = database
+
+    assert len(check["questions"]) == 5
+    assert len(correct) == 5
+    assert float(check["pass_percentage"]) == 80
+
+
+def test_four_of_five_correct_passes(database):
+    _, check, correct, wrong = database
+    first_question = next(iter(correct))
+    answers = {**correct, first_question: wrong[first_question]}
+
+    result = submit(check, answers)
+
+    assert result["passed"] is True
+    assert float(result["percentage"]) == 80
+    assert result["module_status"] == "completed"
+
+
+def test_three_of_five_correct_fails(database):
+    _, check, correct, wrong = database
+    two_questions = list(correct)[:2]
+    answers = {**correct, **{qid: wrong[qid] for qid in two_questions}}
+
+    result = submit(check, answers)
+
+    assert result["passed"] is False
+    assert float(result["percentage"]) == 60
+    assert result["module_status"] == "in_progress"
 
 
 def test_failure_keeps_next_module_locked(database):
