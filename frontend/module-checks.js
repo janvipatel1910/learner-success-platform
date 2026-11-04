@@ -155,7 +155,7 @@
               ? `${module.title}: ${result.percentage}% — Passed. ` +
                 "Module completed. Your module list is being refreshed."
               : `${module.title}: ${result.percentage}% — Not passed. ` +
-                "Review the study outline before trying again.";
+                "Review the study notes before trying again.";
 
             notice.textContent = resultText;
             announce(resultText);
