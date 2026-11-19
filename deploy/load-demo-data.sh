@@ -12,7 +12,8 @@ for sql_file in \
   scripts/seed_demo_module_checks.sql \
   scripts/seed_demo_final_project.sql \
   scripts/seed_demo_practice.sql \
-  scripts/seed_demo_assignments.sql
+  scripts/seed_demo_assignments.sql \
+  scripts/seed_demo_mock_exam.sql
 do
   echo "Loading ${sql_file}"
   "${COMPOSE[@]}" exec -T database \
