@@ -2149,6 +2149,25 @@ footer {
 #tutor-blockers .blocker-tags .badge { text-transform: capitalize; }
 #tutor-blockers .blocker-action { max-width: 560px; }
 
+#tutor-attendance .attendance-card {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #8a97ad;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+#tutor-attendance .attendance-card[data-status="completed"] { border-left-color: #12706a; }
+#tutor-attendance .attendance-card[data-status="cancelled"] { opacity: 0.7; }
+#tutor-attendance .attendance-card h3 { margin: 0 0 8px; font-size: 16px; }
+#tutor-attendance .attendance-meta { font-size: 13px; }
+#tutor-attendance .attendance-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+#tutor-attendance .attendance-form { max-width: 520px; }
+#tutor-attendance td select,
+#tutor-attendance td input { min-width: 120px; margin: 0; }
+#tutor-attendance form > button { margin: 12px 12px 0 0; }
+
 /* Sign-in page: features as a calm row, not answer-style boxes */
 .login-features {
   display: grid;
