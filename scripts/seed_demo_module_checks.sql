@@ -38,7 +38,7 @@ BEGIN
                     '62000000-0000-0000-0002-000000000003',
                     '62000000-0000-0000-0002-000000000004'
                 ]::uuid[],
-                'Demo VPC Module Check'
+                'Networking and VPC Module Check'
             ),
             (
                 '61000000-0000-0000-0000-000000000012'::uuid,
@@ -50,7 +50,7 @@ BEGIN
                     '62000000-0000-0000-0002-000000000013',
                     '62000000-0000-0000-0002-000000000014'
                 ]::uuid[],
-                'Demo S3 Module Check'
+                'Storage and S3 Module Check'
             )
         ) AS checks(assessment_id, topic_id, question_ids, title)
     LOOP
@@ -87,12 +87,14 @@ BEGIN
             NOW()
         )
         ON CONFLICT (id) DO UPDATE
-        SET question_count = EXCLUDED.question_count,
+        SET title = EXCLUDED.title,
+            question_count = EXCLUDED.question_count,
             pass_percentage = EXCLUDED.pass_percentage,
             updated_at = NOW()
         -- Only touch the row when it changes, so the check version stays
         -- the same on repeat runs and learners mid-check are not affected.
-        WHERE assessments.question_count <> EXCLUDED.question_count
+        WHERE assessments.title <> EXCLUDED.title
+           OR assessments.question_count <> EXCLUDED.question_count
            OR assessments.pass_percentage <> EXCLUDED.pass_percentage;
 
         IF NOT EXISTS (

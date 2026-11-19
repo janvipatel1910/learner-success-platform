@@ -24,7 +24,8 @@
       "p", "",
       "Untimed quizzes help you learn each topic. The timed exam " +
       "checks you can answer under exam conditions. Every answer " +
-      "shows an explanation afterwards."
+      "shows an explanation afterwards. Practice results do not " +
+      "complete a module; use the module check inside each module for that."
     ),
     status,
     body

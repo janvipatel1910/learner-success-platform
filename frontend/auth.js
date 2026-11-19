@@ -224,7 +224,7 @@
     button.textContent = "Sign out";
     account.textContent = user.full_name;
     status.textContent =
-      `Signed in as ${user.full_name}. Learning data connection is next.`;
+      `Signed in as ${user.full_name}.`;
 
     window.dispatchEvent(new CustomEvent("skillpulse:signed-in", {
       detail: { user }

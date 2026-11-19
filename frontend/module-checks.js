@@ -71,8 +71,12 @@
           return;
         }
 
+        const passMark = Number(check.pass_percentage).toLocaleString(
+          undefined, { maximumFractionDigits: 1 }
+        );
         notice.textContent =
-          `${check.title} · Pass mark: ${check.pass_percentage}% · ` +
+          `${check.title} · Counts towards completing this module · ` +
+          `Pass mark: ${passMark}% · ` +
           `${check.attempts_remaining} attempts remaining.`;
 
         if (check.attempts_remaining === 0) {

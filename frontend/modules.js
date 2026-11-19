@@ -36,7 +36,8 @@
     details.append(element(
       "p", "form-note",
       "Reading the notes does not complete the module. " +
-      "When you are ready, use Take module check."
+      "When you are ready, use Take module check. It counts towards " +
+      "completing the module; practice quizzes are for practice only."
     ));
 
     const support = element("a", "", "Stuck? Report a learning blocker");
@@ -56,7 +57,7 @@
 
     const overview = element("div", "course-overview");
     overview.append(
-      element("span", "badge", "Live module progress · Demo course"),
+      element("span", "badge", "Your module progress"),
       element("h3", "", coursePreview.title),
       element(
         "p", "",
@@ -65,7 +66,7 @@
       element(
         "p", "form-note",
         "Complete earlier modules to unlock the next. " +
-        "Pass each module check to complete it. Certificate checks are not connected yet."
+        "Pass each module check to complete it."
       )
     );
 
