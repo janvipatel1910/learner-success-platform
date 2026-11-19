@@ -297,6 +297,26 @@ def test_completed_session_engagement_is_upserted() -> None:
         assert created_attendance.minutes_attended == 75
         assert created_attendance.recorded_by == TUTOR_USER_ID
 
+        # Tutors may leave minutes empty; this must save, not fail.
+        without_minutes = (
+            engagement_repository.upsert_session_attendance(
+                ORGANIZATION_ID,
+                COURSE_ID,
+                COHORT_ID,
+                session_id,
+                LEARNER_USER_ID,
+                TUTOR_USER_ID,
+                AttendanceUpsert(
+                    attendance_status=AttendanceStatus.PRESENT,
+                ),
+            )
+        )
+        assert without_minutes is not None
+        assert without_minutes.attendance_status is (
+            AttendanceStatus.PRESENT
+        )
+        assert without_minutes.minutes_attended is None
+
         updated_attendance = (
             engagement_repository.upsert_session_attendance(
                 ORGANIZATION_ID,
