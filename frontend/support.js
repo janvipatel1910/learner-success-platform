@@ -155,7 +155,7 @@
 
       renderBlockers(scoped);
       message.textContent =
-        "Loaded this cohort's blockers. Open count includes open, assigned and waiting-for-learner records.";
+        "Your blockers are up to date. The open count includes blockers your tutor is already working on.";
     } catch (error) {
       setText("blockers-summary", "—");
       list.replaceChildren();
