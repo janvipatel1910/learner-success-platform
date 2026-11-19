@@ -2609,3 +2609,44 @@ footer {
 .topic-details .study-links a {
   font-weight: 600;
 }
+
+/* Module assignments (learner card and tutor reviews) */
+#assignments .assignment-card,
+#tutor-assignments .assignment-card {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left: 4px solid #8a97ad;
+  border-radius: 12px;
+  background: var(--surface);
+}
+#assignments .assignment-card[data-status="submitted"],
+#tutor-assignments .assignment-card[data-status="submitted"] { border-left-color: #b7791f; }
+#assignments .assignment-card[data-status="changes_requested"],
+#tutor-assignments .assignment-card[data-status="changes_requested"] { border-left-color: #c2410c; }
+#assignments .assignment-card[data-status="approved"],
+#tutor-assignments .assignment-card[data-status="approved"] { border-left-color: #12706a; }
+#assignments .assignment-card h3,
+#tutor-assignments .assignment-card h3 { margin: 0 0 8px; font-size: 16px; }
+.assignment-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.assignment-meta { font-size: 13px; }
+.assignment-answer {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(18, 112, 106, 0.06);
+}
+.assignment-answer h4 { margin: 8px 0 4px; font-size: 14px; }
+.assignment-form textarea,
+.assignment-form input,
+.assignment-review textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+.assignment-form button,
+.assignment-review button { margin: 12px 12px 0 0; }
+.badge.status-approved { background: #d9efe9; color: #0c5a55; }
+.badge.status-changes { background: #fde3d6; color: #9a3412; }
+.badge.status-waiting { background: #fbefd5; color: #8a5a12; }
+#tutor-assignments label select { margin-left: 8px; }
