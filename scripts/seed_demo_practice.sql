@@ -78,4 +78,13 @@ VALUES
     ('63000000-0000-0000-0000-000000000003', '62000000-0000-0000-0001-000000000020', 20, 1)
 ON CONFLICT (assessment_id, question_id) DO NOTHING;
 
+-- Hide the 2-question "Synthetic Topic Check" from the base demo data. It was
+-- a placeholder and is replaced by the practice quizzes above. Archiving keeps
+-- any past attempts but removes it from the practice list and readiness.
+UPDATE assessments
+SET status = 'archived', updated_at = NOW()
+WHERE id = '61000000-0000-0000-0000-000000000001'
+  AND title = 'Synthetic Topic Check'
+  AND status = 'published';
+
 COMMIT;
