@@ -7,6 +7,10 @@ from sqlalchemy import text
 
 from skillpulse.db.connection import get_engine
 from skillpulse.db.module_progress import _SCOPE_SQL
+from skillpulse.db.readiness import _GET_READINESS_INPUTS
+
+# Share of completed classes a learner must attend (present or late).
+MINIMUM_ATTENDANCE_PERCENTAGE = 80
 
 
 class CertificateAccessDenied(Exception):
@@ -79,6 +83,49 @@ _FINAL_PROJECT_MET = text("""
 """)
 
 
+_ACTIVE_BLOCKERS = text("""
+    SELECT COUNT(*)
+    FROM blockers
+    WHERE cohort_id = :cohort_id
+      AND learner_id = :learner_id
+      AND status::text IN ('open', 'assigned', 'waiting_student')
+""")
+
+
+def _calculated_gates(connection, parameters) -> dict[str, bool]:
+    """Work out the gates that come from live learner data.
+
+    Labs and mock exams use the minimums of the active readiness model, so the
+    certificate and the readiness page always apply the same rules.
+    """
+    inputs = connection.execute(
+        _GET_READINESS_INPUTS, parameters
+    ).mappings().one_or_none()
+    active_blockers = connection.execute(
+        _ACTIVE_BLOCKERS, parameters
+    ).scalar_one()
+
+    if inputs is None:
+        # No active readiness model: these rules cannot be checked yet.
+        return {
+            "attendance_met": False,
+            "lab_met": False,
+            "mock_score_met": False,
+            "blockers_cleared": active_blockers == 0,
+        }
+
+    return {
+        "attendance_met": (
+            inputs["attendance_component"] >= MINIMUM_ATTENDANCE_PERCENTAGE
+        ),
+        "lab_met": inputs["lab_component"] >= inputs["minimum_lab_completion"],
+        "mock_score_met": (
+            inputs["mock_component"] >= inputs["minimum_mock_score"]
+        ),
+        "blockers_cleared": active_blockers == 0,
+    }
+
+
 def evaluate_certificate_eligibility(
     organization_id: UUID,
     course_id: UUID,
@@ -102,13 +149,7 @@ def evaluate_certificate_eligibility(
 
         previous = connection.execute(
             text("""
-                SELECT
-                    attendance_met,
-                    assignment_met,
-                    lab_met,
-                    mock_score_met,
-                    blockers_cleared,
-                    readiness_snapshot_id
+                SELECT readiness_snapshot_id
                 FROM certificate_eligibility
                 WHERE learner_id = :learner_id
                   AND cohort_id = :cohort_id
@@ -118,16 +159,9 @@ def evaluate_certificate_eligibility(
             parameters,
         ).mappings().one_or_none()
 
-        existing_gates = {
-            name: bool(previous[name]) if previous is not None else False
-            for name in (
-                "attendance_met",
-                "assignment_met",
-                "lab_met",
-                "mock_score_met",
-                "blockers_cleared",
-            )
-        }
+        # Assignments are not built yet, so this rule cannot be met. Older
+        # records may say otherwise (demo data), so they are not copied.
+        assignment_met = False
         module_checks_met = bool(
             connection.execute(_MODULE_CHECKS_MET, parameters).scalar_one()
         )
@@ -136,7 +170,8 @@ def evaluate_certificate_eligibility(
         )
 
         gates = {
-            **existing_gates,
+            **_calculated_gates(connection, parameters),
+            "assignment_met": assignment_met,
             "module_checks_met": module_checks_met,
             "final_project_met": final_project_met,
         }
