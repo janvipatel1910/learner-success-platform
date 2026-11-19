@@ -73,11 +73,11 @@ function renderLearningPath() {
 
   const overview = element("div", "course-overview");
   overview.append(
-    element("span", "badge", "Demo course preview"),
+    element("span", "badge", "Course overview"),
     element("h3", "", coursePreview.title),
-    element("p", "", "AWS-SAA-DEMO · 2 topics · 11 estimated learning hours"),
+    element("p", "", "2 modules · 11 estimated learning hours"),
     element("p", "form-note",
-      "Static preview of the synthetic course. Study outlines are draft content, not completion records.")
+      "Sign in to read the study notes, take module checks and track your progress.")
   );
   container.append(overview);
 
@@ -128,7 +128,7 @@ function renderReadiness(data) {
   setText("attendance-summary", `${formatScore(components.attendance)}%`);
   setText("labs-summary", `${formatScore(components.lab)}%`);
   setText("readiness-summary",
-    "Calculated from current demo records. Blocker resolution is a score, not a blocker count.");
+    "Based on your quizzes, mock exams, labs, attendance and how quickly your blockers are resolved.");
 
   const requirements = [
     [gates.overall_threshold_met, "Overall score",
@@ -233,8 +233,7 @@ window.addEventListener("skillpulse:signed-in", async () => {
 
   setText("connection-status", errors.length
     ? `Signed in. ${errors.join(" ")}`
-    : "Connected to demo learner records. Readiness and history loaded. " +
-      "See My Understanding and Support for their loading status.");
+    : "Your readiness and progress are up to date.");
 });
 
 ;

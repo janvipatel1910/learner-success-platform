@@ -5,10 +5,10 @@ DECLARE
     target_course UUID := '40000000-0000-0000-0000-000000000001';
     target_topic UUID := '41000000-0000-0000-0000-000000000002';
     project_id UUID := '65000000-0000-0000-0000-000000000011';
-    project_title TEXT := 'Demo Capstone: Secure Application and Document Storage';
+    project_title TEXT := 'Capstone: Secure Application and Document Storage';
     project_brief TEXT := $brief$
 Design a secure application architecture using the VPC and S3 concepts
-covered in this demo course.
+covered in this course.
 
 Scenario:
 A small training company needs an application with a private database
@@ -29,7 +29,7 @@ Submission format:
 Provide an HTTPS link to a GitHub repository or a shared document
 that your assigned tutor can access. Include a short submission note.
 
-This is a design-only demo capstone. AWS deployment is not required.
+This is a design-only capstone. AWS deployment is not required.
 Use fictional data. Do not include credentials or real learner documents.
 
 Review criteria:
@@ -69,7 +69,13 @@ BEGIN
         project_id, target_course, target_topic, project_title,
         project_brief, requirements, 100, 'published'
     )
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE
+    SET title = EXCLUDED.title,
+        instructions = EXCLUDED.instructions,
+        updated_at = NOW()
+    -- Only wording changes are applied; anything else still stops below.
+    WHERE lab_tasks.title <> EXCLUDED.title
+       OR lab_tasks.instructions <> EXCLUDED.instructions;
 
     IF NOT EXISTS (
         SELECT 1 FROM lab_tasks
