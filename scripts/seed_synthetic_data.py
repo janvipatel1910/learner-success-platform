@@ -18,6 +18,7 @@ DEMO_CONTENT_FILES = (
     SCRIPTS_DIRECTORY / "seed_demo_module_checks.sql",
     SCRIPTS_DIRECTORY / "seed_demo_final_project.sql",
     SCRIPTS_DIRECTORY / "seed_demo_practice.sql",
+    SCRIPTS_DIRECTORY / "seed_demo_assignments.sql",
 )
 
 

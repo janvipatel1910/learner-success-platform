@@ -10,10 +10,14 @@ from sqlalchemy import text
 from skillpulse.db import module_progress as repository
 from skillpulse.db.connection import get_engine
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("RUN_DATABASE_TESTS") != "true",
-    reason="Set RUN_DATABASE_TESTS=true to run database checks.",
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        os.getenv("RUN_DATABASE_TESTS") != "true",
+        reason="Set RUN_DATABASE_TESTS=true to run database checks.",
+    ),
+    pytest.mark.usefixtures("demo_course_content"),
+]
 
 ORG = UUID("10000000-0000-0000-0000-000000000001")
 COURSE = UUID("40000000-0000-0000-0000-000000000001")

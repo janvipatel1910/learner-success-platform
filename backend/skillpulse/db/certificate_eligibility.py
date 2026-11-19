@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from skillpulse.db.connection import get_engine
+from skillpulse.db.module_assignments import all_assignments_approved
 from skillpulse.db.module_progress import _SCOPE_SQL
 from skillpulse.db.readiness import _GET_READINESS_INPUTS
 
@@ -159,9 +160,8 @@ def evaluate_certificate_eligibility(
             parameters,
         ).mappings().one_or_none()
 
-        # Assignments are not built yet, so this rule cannot be met. Older
-        # records may say otherwise (demo data), so they are not copied.
-        assignment_met = False
+        # Met when every published module assignment is approved.
+        assignment_met = all_assignments_approved(connection, parameters)
         module_checks_met = bool(
             connection.execute(_MODULE_CHECKS_MET, parameters).scalar_one()
         )
