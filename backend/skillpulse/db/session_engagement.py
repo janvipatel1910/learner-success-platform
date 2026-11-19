@@ -143,7 +143,7 @@ _UPSERT_ATTENDANCE_RECORD = text(
         cs.id,
         u.id,
         CAST(:attendance_status AS attendance_status),
-        :minutes_attended,
+        CAST(:minutes_attended AS INTEGER),
         :recorded_by,
         NOW()
     FROM class_sessions AS cs
@@ -171,8 +171,8 @@ _UPSERT_ATTENDANCE_RECORD = text(
         AND h.course_id = :course_id
         AND c.organization_id = :organization_id
         AND (
-            :minutes_attended IS NULL
-            OR :minutes_attended <= CEIL(
+            CAST(:minutes_attended AS INTEGER) IS NULL
+            OR CAST(:minutes_attended AS INTEGER) <= CEIL(
                 EXTRACT(EPOCH FROM (
                     cs.scheduled_end - cs.scheduled_start
                 )) / 60
